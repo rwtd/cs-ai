@@ -10,15 +10,34 @@
 
 require('dotenv').config();
 const express = require('express');
+const basicAuth = require('express-basic-auth');
 const cors = require('cors');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ============================================
+// Basic Auth Configuration
+// ============================================
+const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'C5-@I-hackthon';
+
+const authMiddleware = basicAuth({
+    users: {
+        'richie': AUTH_PASSWORD,
+        'nova': AUTH_PASSWORD,
+        'bhushan': AUTH_PASSWORD
+    },
+    challenge: true,
+    realm: 'CS-AI Command Center - Humans in the Loop'
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Apply basic auth to all routes
+app.use(authMiddleware);
 
 // Serve static files from current directory
 app.use(express.static(path.join(__dirname)));
