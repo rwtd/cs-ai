@@ -1,0 +1,29 @@
+version: "3.8"
+
+services:
+  cs-ai:
+    build: .
+    container_name: cs-ai
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - SERPWOW_API_KEY=${SERPWOW_API_KEY}
+      - RAINFOREST_API_KEY=${RAINFOREST_API_KEY}
+    networks:
+      - traefik
+    labels:
+      # Enable Traefik
+      - "traefik.enable=true"
+      
+      # HTTP Router
+      - "traefik.http.routers.cs-ai.rule=Host(`cs-ai.waugh.cloud`)"
+      - "traefik.http.routers.cs-ai.entrypoints=websecure"
+      - "traefik.http.routers.cs-ai.tls.certresolver=letsencrypt"
+      
+      # Service
+      - "traefik.http.services.cs-ai.loadbalancer.server.port=3000"
+
+networks:
+  traefik:
+    external: true
