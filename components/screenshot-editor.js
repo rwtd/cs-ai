@@ -26,34 +26,38 @@ class ScreenshotEditor {
     // Capture an element and open the editor
     async capture(element, filename = 'screenshot') {
         try {
-            // Get the element's scroll position and reset it
-            const scrollTop = element.scrollTop;
-            const scrollLeft = element.scrollLeft;
+            // Store all scroll positions
+            const elementScrollTop = element.scrollTop;
+            const elementScrollLeft = element.scrollLeft;
+            const windowScrollY = window.scrollY;
+            const windowScrollX = window.scrollX;
+
+            // Reset all scroll positions
             element.scrollTop = 0;
             element.scrollLeft = 0;
 
-            // Wait for scroll to take effect
-            await new Promise(r => setTimeout(r, 50));
+            // Scroll element into view at top
+            element.scrollIntoView({ block: 'start', behavior: 'instant' });
 
-            // Use html2canvas to capture with proper scroll handling
+            // Wait for scroll to take effect
+            await new Promise(r => setTimeout(r, 100));
+
+            // Use html2canvas with negative scroll offset to capture from top
             const canvas = await html2canvas(element, {
                 backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
                 allowTaint: true,
-                scrollX: 0,
-                scrollY: 0,
-                windowWidth: element.scrollWidth,
-                windowHeight: element.scrollHeight,
-                x: 0,
-                y: 0,
+                scrollX: -window.scrollX,
+                scrollY: -window.scrollY,
                 width: element.scrollWidth,
                 height: element.scrollHeight
             });
 
-            // Restore scroll position
-            element.scrollTop = scrollTop;
-            element.scrollLeft = scrollLeft;
+            // Restore scroll positions
+            element.scrollTop = elementScrollTop;
+            element.scrollLeft = elementScrollLeft;
+            window.scrollTo(windowScrollX, windowScrollY);
 
             this.baseImage = canvas;
             this.filename = filename;
