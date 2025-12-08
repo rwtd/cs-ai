@@ -118,6 +118,48 @@
     --orb-3: #06b6d4;
 }
 
+/* ============================================
+   Theme: Cloud White (Light)
+   ============================================ */
+[data-theme="light"] {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #f1f5f9;
+    --bg-tertiary: #e2e8f0;
+    --gradient-hero: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    --gradient-consciousness: radial-gradient(circle at 30% 50%, #c4b5fd 0%, #e0e7ff 50%, #f8fafc 100%);
+    --glass-bg: rgba(99, 102, 241, 0.08);
+    --glass-border: rgba(99, 102, 241, 0.15);
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --theme-accent: #6366f1;
+    --theme-glow: rgba(99, 102, 241, 0.2);
+    --orb-1: rgba(99, 102, 241, 0.3);
+    --orb-2: rgba(139, 92, 246, 0.25);
+    --orb-3: rgba(168, 85, 247, 0.2);
+}
+
+/* ============================================
+   Theme: Sunrise (Warm Light)
+   ============================================ */
+[data-theme="sunrise"] {
+    --bg-primary: #fef7f0;
+    --bg-secondary: #fef3e7;
+    --bg-tertiary: #fed7aa;
+    --gradient-hero: linear-gradient(135deg, #f97316 0%, #fb923c 50%, #fbbf24 100%);
+    --gradient-consciousness: radial-gradient(circle at 30% 50%, #fed7aa 0%, #fef3c7 50%, #fef7f0 100%);
+    --glass-bg: rgba(249, 115, 22, 0.08);
+    --glass-border: rgba(249, 115, 22, 0.15);
+    --text-primary: #431407;
+    --text-secondary: #78350f;
+    --text-muted: #92400e;
+    --theme-accent: #f97316;
+    --theme-glow: rgba(249, 115, 22, 0.2);
+    --orb-1: rgba(249, 115, 22, 0.25);
+    --orb-2: rgba(251, 146, 60, 0.2);
+    --orb-3: rgba(251, 191, 36, 0.15);
+}
+
 /* Reset & Base */
 *,
 *::before,

@@ -288,7 +288,9 @@ class CSAIApp {
             { id: null, name: 'Ethereal Purple', icon: '💜' },
             { id: 'cyber', name: 'Cyber Blue', icon: '💎' },
             { id: 'rose', name: 'Rose Gold', icon: '🌸' },
-            { id: 'matrix', name: 'Matrix Green', icon: '🌲' }
+            { id: 'matrix', name: 'Matrix Green', icon: '🌲' },
+            { id: 'light', name: 'Cloud White', icon: '☁️' },
+            { id: 'sunrise', name: 'Sunrise', icon: '🌅' }
         ];
         let currentThemeIndex = 0;
 
