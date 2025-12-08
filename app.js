@@ -283,10 +283,44 @@ class CSAIApp {
             }
         });
 
-        // Theme toggle
+        // Theme toggle - cycles through themes
+        const themes = [
+            { id: null, name: 'Ethereal Purple', icon: '💜' },
+            { id: 'cyber', name: 'Cyber Blue', icon: '💎' },
+            { id: 'rose', name: 'Rose Gold', icon: '🌸' },
+            { id: 'matrix', name: 'Matrix Green', icon: '🌲' }
+        ];
+        let currentThemeIndex = 0;
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('cs-ai-theme');
+        if (savedTheme) {
+            const idx = themes.findIndex(t => t.id === savedTheme);
+            if (idx !== -1) {
+                currentThemeIndex = idx;
+                if (themes[idx].id) {
+                    document.documentElement.setAttribute('data-theme', themes[idx].id);
+                }
+            }
+        }
+
         document.getElementById('themeToggle')?.addEventListener('click', () => {
-            document.body.classList.toggle('light-theme');
-            this.showToast('🎨 Theme toggled!');
+            // Move to next theme
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const theme = themes[currentThemeIndex];
+
+            // Apply theme
+            if (theme.id) {
+                document.documentElement.setAttribute('data-theme', theme.id);
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+
+            // Save preference
+            localStorage.setItem('cs-ai-theme', theme.id || '');
+
+            // Show toast with theme info
+            this.showToast(`${theme.icon} Theme: ${theme.name}`);
         });
     }
 
