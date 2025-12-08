@@ -5,11 +5,14 @@ services:
     build: .
     container_name: cs-ai
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - NODE_ENV=production
       - PORT=3000
       - SERPWOW_API_KEY=${SERPWOW_API_KEY}
       - RAINFOREST_API_KEY=${RAINFOREST_API_KEY}
+      - AUTH_PASSWORD=${AUTH_PASSWORD}
     networks:
       - traefik
     labels:
