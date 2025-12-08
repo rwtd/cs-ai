@@ -3,7 +3,7 @@
 ## Team: **Humans in the Loop** 🤝
 
 **Hackathon:** Traject Data Customer Support AI Tools  
-**Date:** December 2024
+**Date:** December 2025
 
 ### Team Members
 
@@ -140,7 +140,7 @@ const response = await fetch(
 
 ## 📄 License
 
-Traject Data Hackathon 2024 - Internal Use
+Traject Data Hackathon 2025 - Internal Use
 
 ---
 

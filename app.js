@@ -83,7 +83,7 @@ const PAGE_TEMPLATES = {
         <div class="page-header">
             <div class="page-title">
                 <h1>🏠 Humans in the Loop</h1>
-                <p class="page-subtitle">Traject Data Customer Support AI • Hackathon 2024</p>
+                <p class="page-subtitle">Traject Data Customer Support AI • Hackathon 2025</p>
             </div>
         </div>
         

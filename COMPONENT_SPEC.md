@@ -360,4 +360,4 @@ Before submitting your component:
 
 **Let's build amazing CS tools together! 🎉**
 
-*Team Humans in the Loop - Traject Data Hackathon 2024*
+*Team Humans in the Loop - Traject Data Hackathon 2025*
