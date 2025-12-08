@@ -391,6 +391,19 @@ ComponentRegistry.register('serp-search', {
                 document.getElementById('screenshotBtn')?.addEventListener('click', async () => {
                     const previewEl = document.getElementById('serpPreviewContainer');
 
+                    // Store original styles and expand for full-page capture
+                    const originalMaxHeight = previewEl.style.maxHeight;
+                    const originalOverflow = previewEl.style.overflowY;
+                    previewEl.style.maxHeight = 'none';
+                    previewEl.style.overflowY = 'visible';
+
+                    // Also expand the parent wrapper
+                    const wrapper = previewEl.parentElement;
+                    const wrapperMaxHeight = wrapper?.style.maxHeight;
+                    if (wrapper) wrapper.style.maxHeight = 'none';
+
+                    window.app.showToast('📸 Capturing full page...');
+
                     if (window.screenshotEditor) {
                         await window.screenshotEditor.capture(
                             previewEl,
@@ -399,6 +412,11 @@ ComponentRegistry.register('serp-search', {
                     } else {
                         window.app.showToast('❌ Screenshot editor not loaded');
                     }
+
+                    // Restore original styles
+                    previewEl.style.maxHeight = originalMaxHeight;
+                    previewEl.style.overflowY = originalOverflow;
+                    if (wrapper) wrapper.style.maxHeight = wrapperMaxHeight || '';
                 });
 
                 // Open in Google button
