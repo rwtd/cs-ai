@@ -391,6 +391,10 @@ ComponentRegistry.register('serp-search', {
                 document.getElementById('screenshotBtn')?.addEventListener('click', async () => {
                     const previewEl = document.getElementById('serpPreviewContainer');
 
+                    // Store original scroll position and scroll to top
+                    const originalScrollTop = previewEl.scrollTop;
+                    previewEl.scrollTop = 0;
+
                     // Store original styles and expand for full-page capture
                     const originalMaxHeight = previewEl.style.maxHeight;
                     const originalOverflow = previewEl.style.overflowY;
@@ -400,7 +404,13 @@ ComponentRegistry.register('serp-search', {
                     // Also expand the parent wrapper
                     const wrapper = previewEl.parentElement;
                     const wrapperMaxHeight = wrapper?.style.maxHeight;
-                    if (wrapper) wrapper.style.maxHeight = 'none';
+                    if (wrapper) {
+                        wrapper.style.maxHeight = 'none';
+                        wrapper.style.overflow = 'visible';
+                    }
+
+                    // Small delay to let DOM reflow
+                    await new Promise(r => setTimeout(r, 100));
 
                     window.app.showToast('📸 Capturing full page...');
 
@@ -413,9 +423,10 @@ ComponentRegistry.register('serp-search', {
                         window.app.showToast('❌ Screenshot editor not loaded');
                     }
 
-                    // Restore original styles
+                    // Restore original styles and scroll position
                     previewEl.style.maxHeight = originalMaxHeight;
                     previewEl.style.overflowY = originalOverflow;
+                    previewEl.scrollTop = originalScrollTop;
                     if (wrapper) wrapper.style.maxHeight = wrapperMaxHeight || '';
                 });
 
