@@ -20,7 +20,7 @@ const PORT = process.env.PORT || 3000;
 // ============================================
 // Basic Auth Configuration
 // ============================================
-const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'C5-@I-hackthon';
+const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'C5-@I-hackathon';
 
 const authMiddleware = basicAuth({
     users: {
