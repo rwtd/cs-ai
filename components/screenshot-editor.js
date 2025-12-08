@@ -26,13 +26,34 @@ class ScreenshotEditor {
     // Capture an element and open the editor
     async capture(element, filename = 'screenshot') {
         try {
-            // Use html2canvas to capture
+            // Get the element's scroll position and reset it
+            const scrollTop = element.scrollTop;
+            const scrollLeft = element.scrollLeft;
+            element.scrollTop = 0;
+            element.scrollLeft = 0;
+
+            // Wait for scroll to take effect
+            await new Promise(r => setTimeout(r, 50));
+
+            // Use html2canvas to capture with proper scroll handling
             const canvas = await html2canvas(element, {
                 backgroundColor: '#ffffff',
                 scale: 2,
                 useCORS: true,
-                allowTaint: true
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0,
+                windowWidth: element.scrollWidth,
+                windowHeight: element.scrollHeight,
+                x: 0,
+                y: 0,
+                width: element.scrollWidth,
+                height: element.scrollHeight
             });
+
+            // Restore scroll position
+            element.scrollTop = scrollTop;
+            element.scrollLeft = scrollLeft;
 
             this.baseImage = canvas;
             this.filename = filename;
@@ -40,7 +61,7 @@ class ScreenshotEditor {
 
         } catch (err) {
             console.error('Screenshot capture failed:', err);
-            window.app?.showToast?.('❌ Screenshot capture failed');
+            window.app?.showToast?.('❌ Screenshot capture failed: ' + err.message);
         }
     }
 
