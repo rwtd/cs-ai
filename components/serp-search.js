@@ -178,6 +178,12 @@ ComponentRegistry.register('serp-search', {
                 const aiOverview = data.ai_overview;
                 const ads = data.ads || [];
                 const relatedSearches = data.related_searches || [];
+
+                // Try to find total results from multiple possible locations
+                const totalResults = searchInfo.total_results
+                    || searchInfo.showing_results_for_results
+                    || data.search_metadata?.total_results
+                    || (organicResults.length > 0 ? `${organicResults.length}+` : null);
                 const knowledgeGraph = data.knowledge_graph;
 
                 // Render results with tabs
@@ -201,7 +207,7 @@ ComponentRegistry.register('serp-search', {
                         <div class="stat-card gradient-pink">
                             <div class="stat-icon">🔢</div>
                             <div class="stat-content">
-                                <span class="stat-value">${searchInfo.total_results ? (searchInfo.total_results / 1000000).toFixed(1) + 'M' : 'N/A'}</span>
+                                <span class="stat-value">${typeof totalResults === 'number' ? (totalResults > 1000000 ? (totalResults / 1000000).toFixed(1) + 'M' : totalResults.toLocaleString()) : (totalResults || 'N/A')}</span>
                                 <span class="stat-label">Total Results</span>
                             </div>
                         </div>
@@ -283,7 +289,7 @@ ComponentRegistry.register('serp-search', {
                                     
                                     <!-- Results count -->
                                     <div style="color: #70757a; font-size: 14px; margin-bottom: 20px;">
-                                        About ${searchInfo.total_results?.toLocaleString() || 'N/A'} results (${responseTime} seconds)
+                                        About ${typeof totalResults === 'number' ? totalResults.toLocaleString() : (totalResults || 'N/A')} results (${responseTime} seconds)
                                     </div>
 
                                     ${ads.length > 0 ? `
