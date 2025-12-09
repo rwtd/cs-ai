@@ -105,24 +105,11 @@ ComponentRegistry.register('api-config', {
                         </div>
                     </div>
                     <div class="api-input-group">
-                        <label for="geminiModel">Model</label>
+                        <label for="geminiModel">Model <button class="btn-icon-sm" id="refreshGeminiModels" title="Refresh models from API">🔄</button></label>
                         <select id="geminiModel" class="api-select">
-                            <optgroup label="🚀 Latest">
-                                <option value="gemini-3-pro-preview">Gemini 3 Pro Preview ⭐</option>
-                            </optgroup>
-                            <optgroup label="🧠 Thinking Models">
-                                <option value="gemini-2.0-flash-thinking-exp">Gemini 2.0 Flash Thinking</option>
-                            </optgroup>
-                            <optgroup label="⚡ Fast Models">
-                                <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash Exp</option>
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                <option value="gemini-1.5-flash-8b">Gemini 1.5 Flash 8B</option>
-                            </optgroup>
-                            <optgroup label="🔬 Pro Models">
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                                <option value="gemini-exp-1206">Gemini Exp 1206</option>
-                            </optgroup>
+                            <option value="">-- Select or refresh to load models --</option>
                         </select>
+                        <span id="geminiModelCount" style="font-size: 0.75rem; color: var(--text-muted);"></span>
                     </div>
                     <div class="api-actions">
                         <button class="btn btn-primary" id="saveGemini">💾 Save</button>
@@ -158,38 +145,11 @@ ComponentRegistry.register('api-config', {
                         </div>
                     </div>
                     <div class="api-input-group">
-                        <label for="openrouterModel">Default Model</label>
+                        <label for="openrouterModel">Default Model <button class="btn-icon-sm" id="refreshOpenrouterModels" title="Refresh models from API">🔄</button></label>
                         <select id="openrouterModel" class="api-select">
-                            <optgroup label="🚀 Latest">
-                                <option value="google/gemini-3-pro-preview">Gemini 3 Pro Preview ⭐</option>
-                            </optgroup>
-                            <optgroup label="🧠 Thinking/Reasoning">
-                                <option value="google/gemini-2.0-flash-thinking-exp:free">Gemini 2.0 Flash Thinking (Free)</option>
-                                <option value="deepseek/deepseek-r1">DeepSeek R1</option>
-                                <option value="openai/o1-mini">OpenAI o1-mini</option>
-                            </optgroup>
-                            <optgroup label="🔥 Google Gemini">
-                                <option value="google/gemini-2.0-flash-exp:free">Gemini 2.0 Flash (Free)</option>
-                                <option value="google/gemini-exp-1206:free">Gemini Exp 1206 (Free)</option>
-                                <option value="google/gemini-flash-1.5">Gemini 1.5 Flash</option>
-                                <option value="google/gemini-pro-1.5">Gemini 1.5 Pro</option>
-                            </optgroup>
-                            <optgroup label="🟣 Anthropic Claude">
-                                <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
-                                <option value="anthropic/claude-3.5-haiku">Claude 3.5 Haiku</option>
-                                <option value="anthropic/claude-3-opus">Claude 3 Opus</option>
-                            </optgroup>
-                            <optgroup label="🟢 OpenAI">
-                                <option value="openai/gpt-4o">GPT-4o</option>
-                                <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
-                                <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
-                            </optgroup>
-                            <optgroup label="🦙 Open Source">
-                                <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
-                                <option value="qwen/qwen-2.5-72b-instruct">Qwen 2.5 72B</option>
-                                <option value="mistralai/mistral-large-2411">Mistral Large 2411</option>
-                            </optgroup>
+                            <option value="">-- Refresh to load 400+ models --</option>
                         </select>
+                        <span id="openrouterModelCount" style="font-size: 0.75rem; color: var(--text-muted);"></span>
                     </div>
                     <div class="api-actions">
                         <button class="btn btn-primary" id="saveOpenrouter">💾 Save</button>
@@ -340,6 +300,196 @@ ComponentRegistry.register('api-config', {
         document.getElementById('testGemini')?.addEventListener('click', () => {
             this.testGemini();
         });
+
+        // Model refresh buttons
+        document.getElementById('refreshGeminiModels')?.addEventListener('click', () => {
+            this.loadGeminiModels();
+        });
+
+        document.getElementById('refreshOpenrouterModels')?.addEventListener('click', () => {
+            this.loadOpenrouterModels();
+        });
+
+        // Auto-load models if we have keys
+        if (localStorage.getItem('gemini_api_key')) {
+            this.loadGeminiModels();
+        }
+        if (localStorage.getItem('openrouter_api_key')) {
+            this.loadOpenrouterModels();
+        }
+    },
+
+    loadGeminiModels: async function () {
+        const apiKey = localStorage.getItem('gemini_api_key');
+        const select = document.getElementById('geminiModel');
+        const countSpan = document.getElementById('geminiModelCount');
+
+        if (!apiKey) {
+            window.app.showToast('⚠️ Enter and save your Gemini API key first');
+            return;
+        }
+
+        select.innerHTML = '<option value="">🔄 Loading models...</option>';
+
+        try {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error.message);
+            }
+
+            const models = data.models || [];
+            const generativeModels = models.filter(m =>
+                m.supportedGenerationMethods?.includes('generateContent')
+            );
+
+            // Group models by type
+            const groups = {
+                'gemini-2': [],
+                'gemini-1.5': [],
+                'gemini-1.0': [],
+                'other': []
+            };
+
+            generativeModels.forEach(m => {
+                const name = m.name.replace('models/', '');
+                const displayName = m.displayName || name;
+
+                if (name.includes('gemini-2') || name.includes('2.0')) {
+                    groups['gemini-2'].push({ value: name, label: displayName });
+                } else if (name.includes('gemini-1.5') || name.includes('1.5')) {
+                    groups['gemini-1.5'].push({ value: name, label: displayName });
+                } else if (name.includes('gemini-1.0') || name.includes('gemini-pro')) {
+                    groups['gemini-1.0'].push({ value: name, label: displayName });
+                } else {
+                    groups['other'].push({ value: name, label: displayName });
+                }
+            });
+
+            select.innerHTML = '';
+
+            if (groups['gemini-2'].length) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = '🚀 Gemini 2.x';
+                groups['gemini-2'].forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.value;
+                    opt.textContent = m.label;
+                    optgroup.appendChild(opt);
+                });
+                select.appendChild(optgroup);
+            }
+
+            if (groups['gemini-1.5'].length) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = '⚡ Gemini 1.5';
+                groups['gemini-1.5'].forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.value;
+                    opt.textContent = m.label;
+                    optgroup.appendChild(opt);
+                });
+                select.appendChild(optgroup);
+            }
+
+            if (groups['gemini-1.0'].length) {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = '🔬 Gemini 1.0/Pro';
+                groups['gemini-1.0'].forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m.value;
+                    opt.textContent = m.label;
+                    optgroup.appendChild(opt);
+                });
+                select.appendChild(optgroup);
+            }
+
+            // Restore saved selection
+            const savedModel = localStorage.getItem('gemini_model');
+            if (savedModel) select.value = savedModel;
+
+            countSpan.textContent = `${generativeModels.length} models available`;
+            window.app.showToast(`✅ Loaded ${generativeModels.length} Gemini models`);
+
+        } catch (error) {
+            select.innerHTML = '<option value="">❌ Failed to load</option>';
+            countSpan.textContent = error.message;
+            window.app.showToast(`❌ ${error.message}`);
+        }
+    },
+
+    loadOpenrouterModels: async function () {
+        const apiKey = localStorage.getItem('openrouter_api_key');
+        const select = document.getElementById('openrouterModel');
+        const countSpan = document.getElementById('openrouterModelCount');
+
+        select.innerHTML = '<option value="">🔄 Loading models...</option>';
+
+        try {
+            const headers = {};
+            if (apiKey) {
+                headers['Authorization'] = `Bearer ${apiKey}`;
+            }
+
+            const response = await fetch('https://openrouter.ai/api/v1/models', { headers });
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error.message || data.error);
+            }
+
+            const models = data.data || [];
+
+            // Group by provider
+            const groups = {};
+            models.forEach(m => {
+                const [provider] = m.id.split('/');
+                const providerName = provider.charAt(0).toUpperCase() + provider.slice(1);
+                if (!groups[providerName]) groups[providerName] = [];
+
+                const pricing = m.pricing?.prompt ? `$${(parseFloat(m.pricing.prompt) * 1000000).toFixed(2)}/1M` : '';
+                groups[providerName].push({
+                    value: m.id,
+                    label: `${m.name || m.id}${pricing ? ` (${pricing})` : ''}`
+                });
+            });
+
+            select.innerHTML = '';
+
+            // Priority providers first
+            const priorityProviders = ['Google', 'Anthropic', 'Openai', 'Meta-llama', 'Mistralai', 'Deepseek'];
+            const sortedProviders = [
+                ...priorityProviders.filter(p => groups[p]),
+                ...Object.keys(groups).filter(p => !priorityProviders.includes(p)).sort()
+            ];
+
+            sortedProviders.forEach(provider => {
+                if (!groups[provider]?.length) return;
+
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = provider;
+                groups[provider].slice(0, 20).forEach(m => { // Limit per provider
+                    const opt = document.createElement('option');
+                    opt.value = m.value;
+                    opt.textContent = m.label;
+                    optgroup.appendChild(opt);
+                });
+                select.appendChild(optgroup);
+            });
+
+            // Restore saved selection
+            const savedModel = localStorage.getItem('openrouter_model');
+            if (savedModel) select.value = savedModel;
+
+            countSpan.textContent = `${models.length} models available`;
+            window.app.showToast(`✅ Loaded ${models.length} OpenRouter models`);
+
+        } catch (error) {
+            select.innerHTML = '<option value="">❌ Failed to load</option>';
+            countSpan.textContent = error.message;
+            window.app.showToast(`❌ ${error.message}`);
+        }
     },
 
     setupToggle: function (btnId, inputId) {

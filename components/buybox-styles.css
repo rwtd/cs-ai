@@ -1825,3 +1825,21 @@
     padding: 6px 12px;
     font-size: 0.85rem;
 }
+
+/* ============================================
+   Small Icon Button for Refresh
+   ============================================ */
+
+.btn-icon-sm {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: all var(--transition-fast);
+}
+
+.btn-icon-sm:hover {
+    background: rgba(139, 92, 246, 0.2);
+}
