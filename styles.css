@@ -160,6 +160,38 @@
     --orb-3: rgba(251, 191, 36, 0.15);
 }
 
+/* Light theme top-bar fixes */
+[data-theme="light"] .top-bar,
+[data-theme="sunrise"] .top-bar {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .top-bar *,
+[data-theme="sunrise"] .top-bar * {
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .asin-search-input,
+[data-theme="sunrise"] .asin-search-input {
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .asin-search-input::placeholder,
+[data-theme="sunrise"] .asin-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+[data-theme="light"] .user-avatar-btn,
+[data-theme="sunrise"] .user-avatar-btn {
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--text-primary);
+}
+
+[data-theme="light"] .user-dropdown,
+[data-theme="sunrise"] .user-dropdown {
+    background: #ffffff;
+}
+
 /* Reset & Base */
 *,
 *::before,
