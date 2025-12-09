@@ -13,6 +13,8 @@ services:
       - SERPWOW_API_KEY=${SERPWOW_API_KEY}
       - RAINFOREST_API_KEY=${RAINFOREST_API_KEY}
       - AUTH_PASSWORD=${AUTH_PASSWORD}
+    volumes:
+      - cs-ai-data:/app/data
     networks:
       - traefik
     labels:
@@ -26,6 +28,9 @@ services:
       
       # Service
       - "traefik.http.services.cs-ai.loadbalancer.server.port=3000"
+
+volumes:
+  cs-ai-data:
 
 networks:
   traefik:
