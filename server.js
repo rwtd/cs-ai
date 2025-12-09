@@ -210,7 +210,7 @@ app.get('/api/wildeer/search', async (req, res) => {
     const token = req.headers['authorization'] || wildeerToken;
 
     if (!token) {
-        return res.status(401).json({ success: false, error: 'Not authenticated. Set token first.' });
+        return res.status(400).json({ success: false, error: 'Not authenticated. Please login first.' });
     }
 
     const { term, app: appFilter, page = 1 } = req.query;
@@ -235,6 +235,15 @@ app.get('/api/wildeer/search', async (req, res) => {
             }
         });
 
+        // Check for auth errors without triggering browser dialog
+        if (response.status === 401 || response.status === 403) {
+            return res.status(400).json({
+                success: false,
+                error: 'Token expired or invalid. Please re-authenticate.',
+                expired: true
+            });
+        }
+
         const data = await response.json();
         res.json(data);
     } catch (error) {
@@ -247,7 +256,7 @@ app.get('/api/wildeer/usage/:userId', async (req, res) => {
     const token = req.headers['authorization'] || wildeerToken;
 
     if (!token) {
-        return res.status(401).json({ success: false, error: 'Not authenticated' });
+        return res.status(400).json({ success: false, error: 'Not authenticated' });
     }
 
     try {
@@ -258,6 +267,10 @@ app.get('/api/wildeer/usage/:userId', async (req, res) => {
                 'accept': 'application/json'
             }
         });
+
+        if (response.status === 401 || response.status === 403) {
+            return res.status(400).json({ success: false, error: 'Token expired', expired: true });
+        }
 
         const data = await response.json();
         res.json(data);
@@ -271,7 +284,7 @@ app.get('/api/wildeer/plans', async (req, res) => {
     const token = req.headers['authorization'] || wildeerToken;
 
     if (!token) {
-        return res.status(401).json({ success: false, error: 'Not authenticated' });
+        return res.status(400).json({ success: false, error: 'Not authenticated' });
     }
 
     try {
@@ -282,6 +295,10 @@ app.get('/api/wildeer/plans', async (req, res) => {
                 'accept': 'application/json'
             }
         });
+
+        if (response.status === 401 || response.status === 403) {
+            return res.status(400).json({ success: false, error: 'Token expired', expired: true });
+        }
 
         const data = await response.json();
         res.json(data);
@@ -296,7 +313,7 @@ app.get('/api/wildeer/check-ban', async (req, res) => {
     const { email } = req.query;
 
     if (!token) {
-        return res.status(401).json({ success: false, error: 'Not authenticated' });
+        return res.status(400).json({ success: false, error: 'Not authenticated' });
     }
 
     try {

@@ -224,7 +224,18 @@ ComponentRegistry.register('wildeer-admin', {
                 });
                 const result = await response.json();
 
+                if (result.expired) {
+                    // Token expired - clear it and prompt re-login
+                    localStorage.removeItem('wildeer_token');
+                    window.app.showToast('⚠️ Session expired. Please login again.');
+                    location.reload();
+                    return;
+                }
+
                 if (result.success && result.data) {
+                    component.renderSearchResults(result);
+                } else if (result.data) {
+                    // Wildeer API returns data directly without success flag
                     component.renderSearchResults(result);
                 } else {
                     throw new Error(result.error || 'Search failed');
