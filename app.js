@@ -32,25 +32,23 @@ const NAV_CONFIG = [
         section: '🔍 SerpWow Tools',
         items: [
             { id: 'serp-search', icon: '🌐', label: 'SERP Lookup' },
-            { id: 'ai-overview', icon: '🤖', label: 'AI Overview' },
-            { id: 'trends', icon: '📰', label: 'Trends & News' },
-            { id: 'maps', icon: '📍', label: 'Maps & Local' }
+            { id: 'trends', icon: '📰', label: 'Trends & News' }
         ]
     },
     {
         section: '🌧️ Rainforest Tools',
         items: [
             { id: 'product-lookup', icon: '📦', label: 'Product Lookup' },
-            { id: 'reviews', icon: '⭐', label: 'Reviews Analysis' },
             { id: 'pricing', icon: '💰', label: 'Price Tracker' },
             { id: 'buybox', icon: '🏆', label: 'Buy Box Monitor' },
-            { id: 'sellers', icon: '🏪', label: 'Seller Intel' }
+            { id: 'buybox-dominator', icon: '⚡', label: 'Dominator Mode', badge: { type: 'new', text: 'NEW' } }
         ]
     },
     {
-        section: 'Settings',
+        section: '⚙️ Settings',
         items: [
-            { id: 'api-config', icon: '🔑', label: 'API Keys' }
+            { id: 'api-config', icon: '🔑', label: 'API Keys' },
+            { id: 'admin', icon: '🛡️', label: 'Admin Panel' }
         ]
     }
 ];
@@ -324,13 +322,171 @@ class CSAIApp {
             // Show toast with theme info
             this.showToast(`${theme.icon} Theme: ${theme.name}`);
         });
+
+        // ASIN Search Bar functionality
+        this.initAsinSearch();
+    }
+
+    initAsinSearch() {
+        const container = document.getElementById('asinSearchContainer');
+        const input = document.getElementById('asinSearchInput');
+        const searchBtn = document.getElementById('asinSearchBtn');
+        const marketplace = document.getElementById('asinMarketplace');
+        const quickActions = document.getElementById('asinQuickActions');
+
+        if (!input || !searchBtn) return;
+
+        // Track current ASIN
+        let currentAsin = '';
+
+        // Validate and format ASIN as user types
+        input.addEventListener('input', (e) => {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (value.length > 10) value = value.substring(0, 10);
+            e.target.value = value;
+
+            // Toggle quick actions visibility
+            const isValidAsin = /^[A-Z0-9]{10}$/.test(value);
+            if (isValidAsin) {
+                container.classList.add('has-asin');
+                currentAsin = value;
+            } else {
+                container.classList.remove('has-asin');
+                currentAsin = '';
+            }
+        });
+
+        // Handle paste - extract ASIN from Amazon URLs
+        input.addEventListener('paste', (e) => {
+            setTimeout(() => {
+                let value = input.value.trim();
+
+                // Check if it's an Amazon URL
+                const urlPatterns = [
+                    /\/dp\/([A-Z0-9]{10})/i,
+                    /\/gp\/product\/([A-Z0-9]{10})/i,
+                    /\/product\/([A-Z0-9]{10})/i,
+                    /\/ASIN\/([A-Z0-9]{10})/i
+                ];
+
+                for (const pattern of urlPatterns) {
+                    const match = value.match(pattern);
+                    if (match) {
+                        input.value = match[1].toUpperCase();
+                        input.dispatchEvent(new Event('input'));
+                        this.showToast('📦 ASIN extracted from URL!');
+                        return;
+                    }
+                }
+
+                // Just clean up the value
+                input.value = value.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 10);
+                input.dispatchEvent(new Event('input'));
+            }, 0);
+        });
+
+        // Enter key to search
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && currentAsin) {
+                this.openAsinInTool(currentAsin, marketplace.value, 'buybox-dominator');
+            }
+        });
+
+        // Main search button - opens Dominator by default
+        searchBtn.addEventListener('click', () => {
+            if (currentAsin) {
+                this.openAsinInTool(currentAsin, marketplace.value, 'buybox-dominator');
+            } else {
+                this.showToast('⚠️ Please enter a valid 10-character ASIN');
+            }
+        });
+
+        // Quick action buttons
+        quickActions?.addEventListener('click', (e) => {
+            const btn = e.target.closest('.asin-quick-btn');
+            if (btn && currentAsin) {
+                const action = btn.dataset.action;
+                const pageMap = {
+                    'dominator': 'buybox-dominator',
+                    'pricing': 'pricing',
+                    'buybox': 'buybox',
+                    'product-lookup': 'product-lookup'
+                };
+                this.openAsinInTool(currentAsin, marketplace.value, pageMap[action] || 'buybox-dominator');
+            }
+        });
+    }
+
+    openAsinInTool(asin, marketplace, toolId) {
+        // Store ASIN for the component to pick up
+        window.pendingAsin = {
+            asin: asin,
+            marketplace: marketplace,
+            timestamp: Date.now()
+        };
+
+        // Also store in localStorage for persistence
+        localStorage.setItem('cs-ai-pending-asin', JSON.stringify(window.pendingAsin));
+
+        // Navigate to the tool
+        this.navigateTo(toolId);
+
+        // Try to auto-fill the ASIN in the tool after a short delay
+        setTimeout(() => {
+            this.autoFillAsin(asin, marketplace, toolId);
+        }, 100);
+
+        this.showToast(`📦 Opening ${asin} in ${toolId.replace('-', ' ')}`);
+    }
+
+    autoFillAsin(asin, marketplace, toolId) {
+        // Map tool IDs to their input field IDs
+        const inputMap = {
+            'buybox-dominator': 'domAsinInput',
+            'pricing': 'priceAsinInput',
+            'buybox': 'bbAsinInput',
+            'product-lookup': 'productAsinInput'
+        };
+
+        const marketplaceMap = {
+            'buybox-dominator': 'domMarketplace',
+            'pricing': 'priceMarketplace',
+            'buybox': 'bbMarketplace',
+            'product-lookup': 'productMarketplace'
+        };
+
+        const inputId = inputMap[toolId];
+        const marketplaceId = marketplaceMap[toolId];
+
+        if (inputId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = asin;
+                input.dispatchEvent(new Event('input'));
+            }
+        }
+
+        if (marketplaceId) {
+            const select = document.getElementById(marketplaceId);
+            if (select) {
+                select.value = marketplace;
+            }
+        }
+
+        // For Dominator, auto-analyze
+        if (toolId === 'buybox-dominator') {
+            const analyzeBtn = document.getElementById('domAnalyzeBtn');
+            if (analyzeBtn) {
+                setTimeout(() => analyzeBtn.click(), 200);
+            }
+        }
     }
 
     initKeyboardShortcuts() {
         document.addEventListener('keydown', (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault();
-                document.getElementById('searchInput')?.focus();
+                document.getElementById('asinSearchInput')?.focus();
             }
         });
     }

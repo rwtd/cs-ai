@@ -1,0 +1,59 @@
+{
+    "manifest_version": 3,
+    "name": "CS-AI ASIN Hunter",
+    "version": "1.0.0",
+    "description": "Extract ASINs from Amazon pages and quickly lookup in CS-AI Command Center",
+    "author": "Team Humans in the Loop",
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
+    "permissions": [
+        "activeTab",
+        "clipboardWrite",
+        "storage"
+    ],
+    "host_permissions": [
+        "*://*.amazon.com/*",
+        "*://*.amazon.co.uk/*",
+        "*://*.amazon.de/*",
+        "*://*.amazon.ca/*",
+        "*://*.amazon.fr/*",
+        "*://*.amazon.it/*",
+        "*://*.amazon.es/*",
+        "*://*.amazon.co.jp/*"
+    ],
+    "action": {
+        "default_popup": "popup/popup.html",
+        "default_icon": {
+            "16": "icons/icon16.png",
+            "48": "icons/icon48.png"
+        }
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "*://*.amazon.com/*",
+                "*://*.amazon.co.uk/*",
+                "*://*.amazon.de/*",
+                "*://*.amazon.ca/*",
+                "*://*.amazon.fr/*",
+                "*://*.amazon.it/*",
+                "*://*.amazon.es/*",
+                "*://*.amazon.co.jp/*"
+            ],
+            "js": [
+                "content/content.js"
+            ],
+            "css": [
+                "content/content.css"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "options_page": "options/options.html",
+    "background": {
+        "service_worker": "background/service-worker.js"
+    }
+}

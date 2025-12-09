@@ -1,0 +1,241 @@
+/* CS-AI ASIN Hunter Widget Styles */
+
+#csai-asin-hunter {
+    position: fixed;
+    top: 100px;
+    right: 20px;
+    width: 280px;
+    background: linear-gradient(135deg, #0f1433 0%, #151a3d 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 40px rgba(139, 92, 246, 0.2);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    z-index: 999999;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+#csai-asin-hunter:hover {
+    border-color: rgba(139, 92, 246, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 60px rgba(139, 92, 246, 0.3);
+}
+
+#csai-asin-hunter.minimized {
+    width: 100px;
+}
+
+.csai-widget-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+    cursor: move;
+}
+
+.csai-logo {
+    font-size: 20px;
+}
+
+.csai-title {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.csai-minimize {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(139, 92, 246, 0.2);
+    border: none;
+    color: #c8d1e0;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.csai-minimize:hover {
+    background: rgba(139, 92, 246, 0.4);
+    color: white;
+}
+
+.csai-widget-body {
+    padding: 16px;
+}
+
+.csai-asin-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    margin-bottom: 12px;
+}
+
+.csai-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #8b97a8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.csai-asin {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 700;
+    color: #f8fafc;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+}
+
+.csai-copy {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(139, 92, 246, 0.2);
+    border: none;
+    color: #c8d1e0;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.csai-copy:hover {
+    background: rgba(139, 92, 246, 0.4);
+    transform: scale(1.05);
+}
+
+.csai-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.csai-value {
+    font-size: 13px;
+    color: #f8fafc;
+    font-weight: 500;
+}
+
+.csai-seller {
+    color: #8b5cf6;
+}
+
+.csai-actions {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0 12px;
+}
+
+.csai-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 8px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    color: #c8d1e0;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.csai-btn:hover {
+    background: rgba(139, 92, 246, 0.3);
+    border-color: rgba(139, 92, 246, 0.4);
+    transform: translateY(-2px);
+    color: white;
+}
+
+.csai-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+
+.csai-btn-primary:hover {
+    box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+}
+
+.csai-quick-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    padding-top: 12px;
+    border-top: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.csai-quick-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.15);
+    color: #c8d1e0;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.csai-quick-btn:hover {
+    background: rgba(139, 92, 246, 0.25);
+    border-color: rgba(139, 92, 246, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Toast notification */
+.csai-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5);
+    z-index: 9999999;
+    opacity: 0;
+    transition: all 0.3s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.csai-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Responsive adjustments for smaller viewports */
+@media (max-width: 400px) {
+    #csai-asin-hunter {
+        width: 260px;
+        right: 10px;
+    }
+
+    .csai-actions {
+        flex-wrap: wrap;
+    }
+}

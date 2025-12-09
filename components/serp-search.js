@@ -1,13 +1,14 @@
 /**
- * SERP Search Tool - Real API Version with Preview
+ * SERP Search Tool - Enhanced Version
  * Team: Humans in the Loop
  * 
  * Features:
- * - Real SerpWow API integration
- * - Beautiful results display
- * - Google-style SERP preview with screenshot
- * - Raw JSON response viewer
- * - Editable request for re-execution
+ * - All SerpWow search types (web, images, news, videos, places, shopping)
+ * - Advanced parameter controls
+ * - AI Overview integration
+ * - Real-time API integration
+ * - SERP preview with screenshot
+ * - Raw JSON & request editor
  */
 
 ComponentRegistry.register('serp-search', {
@@ -15,7 +16,7 @@ ComponentRegistry.register('serp-search', {
         <div class="page-header">
             <div class="page-title">
                 <h1>🔍 SERP Lookup Tool</h1>
-                <p class="page-subtitle">Search Google results in real-time using SerpWow API</p>
+                <p class="page-subtitle">Search Google results using SerpWow API • <a href="https://www.serpwow.com/docs/search/overview" target="_blank" style="color: var(--accent-purple);">📖 API Docs</a></p>
             </div>
             <div class="page-actions">
                 <button class="btn btn-secondary" id="serpClearBtn">
@@ -26,10 +27,13 @@ ComponentRegistry.register('serp-search', {
 
         <div class="card" style="max-width: 1200px; margin-bottom: 24px;">
             <div class="card-header">
-                <h3>🌐 Google Search Query</h3>
-                <span class="card-badge" id="apiStatusBadge">Checking API...</span>
+                <h3>🌐 Search Query</h3>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span class="card-badge" id="apiStatusBadge">Checking API...</span>
+                </div>
             </div>
             <div style="padding: 24px;">
+                <!-- Main Search Row -->
                 <div style="display: flex; gap: 12px; margin-bottom: 16px;">
                     <input type="text" id="serpQueryInput" 
                            class="search-input" 
@@ -40,31 +44,163 @@ ComponentRegistry.register('serp-search', {
                     </button>
                 </div>
                 
-                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-                    <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.85rem;">
-                        <select id="serpLocation" style="padding: 8px 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); color: var(--text-primary);">
+                <!-- Search Type Tabs -->
+                <div class="serp-type-tabs" style="display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap;">
+                    <button class="serp-type-btn active" data-type="search" title="Web Search">🌐 Web</button>
+                    <button class="serp-type-btn" data-type="images" title="Image Search">🖼️ Images</button>
+                    <button class="serp-type-btn" data-type="news" title="News Search">📰 News</button>
+                    <button class="serp-type-btn" data-type="videos" title="Video Search">🎬 Videos</button>
+                    <button class="serp-type-btn" data-type="places" title="Local/Maps Search">📍 Places</button>
+                    <button class="serp-type-btn" data-type="shopping" title="Shopping Search">🛒 Shopping</button>
+                </div>
+
+                <!-- Quick Options Row -->
+                <div style="display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;">
+                    <label class="serp-option">
+                        <select id="serpLocation">
                             <option value="United States">🇺🇸 United States</option>
                             <option value="United Kingdom">🇬🇧 United Kingdom</option>
                             <option value="Canada">🇨🇦 Canada</option>
                             <option value="Germany">🇩🇪 Germany</option>
                             <option value="France">🇫🇷 France</option>
                             <option value="Australia">🇦🇺 Australia</option>
+                            <option value="Japan">🇯🇵 Japan</option>
+                            <option value="India">🇮🇳 India</option>
+                            <option value="Brazil">🇧🇷 Brazil</option>
+                            <option value="Mexico">🇲🇽 Mexico</option>
                         </select>
-                        Location
+                        <span>Location</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.85rem;">
-                        <select id="serpDevice" style="padding: 8px 12px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); color: var(--text-primary);">
+                    <label class="serp-option">
+                        <select id="serpDevice">
                             <option value="desktop">🖥️ Desktop</option>
                             <option value="mobile">📱 Mobile</option>
                             <option value="tablet">📱 Tablet</option>
                         </select>
-                        Device
+                        <span>Device</span>
                     </label>
-                    <label style="display: flex; align-items: center; gap: 8px; color: var(--text-secondary); font-size: 0.85rem;">
-                        <input type="number" id="serpNum" value="10" min="1" max="100" 
-                               style="width: 60px; padding: 8px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); color: var(--text-primary);">
-                        Results
+                    <label class="serp-option">
+                        <input type="number" id="serpNum" value="10" min="1" max="100" style="width: 60px;">
+                        <span>Results</span>
                     </label>
+                    <button class="btn btn-ghost" id="toggleAdvanced" style="margin-left: auto;">
+                        ⚙️ Advanced <span id="advancedArrow">▼</span>
+                    </button>
+                </div>
+
+                <!-- Advanced Options (Collapsible) -->
+                <div id="advancedOptions" class="advanced-options" style="display: none;">
+                    <div class="advanced-grid">
+                        <!-- Engine & Domain -->
+                        <div class="advanced-group">
+                            <h4>🔧 Engine & Domain</h4>
+                            <label class="serp-option-full">
+                                <span>Search Engine</span>
+                                <select id="serpEngine">
+                                    <option value="google">Google</option>
+                                    <option value="bing">Bing</option>
+                                    <option value="yahoo">Yahoo</option>
+                                    <option value="yandex">Yandex</option>
+                                    <option value="baidu">Baidu</option>
+                                    <option value="naver">Naver</option>
+                                </select>
+                            </label>
+                            <label class="serp-option-full">
+                                <span>Google Domain</span>
+                                <select id="serpGoogleDomain">
+                                    <option value="google.com">google.com (US)</option>
+                                    <option value="google.co.uk">google.co.uk (UK)</option>
+                                    <option value="google.ca">google.ca (Canada)</option>
+                                    <option value="google.de">google.de (Germany)</option>
+                                    <option value="google.fr">google.fr (France)</option>
+                                    <option value="google.com.au">google.com.au (Australia)</option>
+                                    <option value="google.co.jp">google.co.jp (Japan)</option>
+                                    <option value="google.co.in">google.co.in (India)</option>
+                                    <option value="google.com.br">google.com.br (Brazil)</option>
+                                </select>
+                            </label>
+                        </div>
+                        
+                        <!-- Language & Country -->
+                        <div class="advanced-group">
+                            <h4>🌍 Language & Country</h4>
+                            <label class="serp-option-full">
+                                <span>Interface Language (hl)</span>
+                                <select id="serpHl">
+                                    <option value="">Auto</option>
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="pt">Portuguese</option>
+                                    <option value="ja">Japanese</option>
+                                    <option value="zh-CN">Chinese (Simplified)</option>
+                                </select>
+                            </label>
+                            <label class="serp-option-full">
+                                <span>Country Code (gl)</span>
+                                <select id="serpGl">
+                                    <option value="">Auto</option>
+                                    <option value="us">US</option>
+                                    <option value="uk">UK</option>
+                                    <option value="ca">Canada</option>
+                                    <option value="de">Germany</option>
+                                    <option value="fr">France</option>
+                                    <option value="au">Australia</option>
+                                    <option value="jp">Japan</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <!-- Time & Filters -->
+                        <div class="advanced-group">
+                            <h4>⏰ Time & Filters</h4>
+                            <label class="serp-option-full">
+                                <span>Time Period</span>
+                                <select id="serpTimePeriod">
+                                    <option value="">Any time</option>
+                                    <option value="last_hour">Last hour</option>
+                                    <option value="last_day">Last 24 hours</option>
+                                    <option value="last_week">Last week</option>
+                                    <option value="last_month">Last month</option>
+                                    <option value="last_year">Last year</option>
+                                </select>
+                            </label>
+                            <label class="serp-option-full">
+                                <span>SafeSearch</span>
+                                <select id="serpSafe">
+                                    <option value="">Default</option>
+                                    <option value="active">Active (strict)</option>
+                                    <option value="off">Off</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <!-- Pagination & Output -->
+                        <div class="advanced-group">
+                            <h4>📄 Pagination & Output</h4>
+                            <label class="serp-option-full">
+                                <span>Page Number</span>
+                                <input type="number" id="serpPage" value="1" min="1" max="100">
+                            </label>
+                            <label class="serp-option-full">
+                                <span>Include HTML</span>
+                                <select id="serpIncludeHtml">
+                                    <option value="false">No</option>
+                                    <option value="true">Yes</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Documentation Links -->
+                    <div class="docs-links" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--glass-border);">
+                        <span style="color: var(--text-muted); font-size: 0.85rem; margin-right: 12px;">📚 Quick Links:</span>
+                        <a href="https://www.serpwow.com/docs/search/overview" target="_blank">Overview</a>
+                        <a href="https://www.serpwow.com/docs/search-api/searches/google/search" target="_blank">Parameters</a>
+                        <a href="https://www.serpwow.com/docs/search-api/searches/google/core-parameters" target="_blank">Core Params</a>
+                        <a href="https://www.serpwow.com/docs/batches-api/overview" target="_blank">Batches API</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -83,6 +219,7 @@ ComponentRegistry.register('serp-search', {
         let lastRequest = null;
         let lastResponse = null;
         let requestStartTime = null;
+        let currentSearchType = 'search'; // Default to web search
 
         // Check API status on load
         fetch('/api/status')
@@ -104,6 +241,27 @@ ComponentRegistry.register('serp-search', {
                 apiStatusBadge.style.color = 'var(--accent-red)';
             });
 
+        // Search type tabs
+        document.querySelectorAll('.serp-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.serp-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentSearchType = btn.dataset.type;
+                window.app.showToast(`🔍 Search type: ${btn.textContent.trim()}`);
+            });
+        });
+
+        // Advanced options toggle
+        const toggleAdvanced = document.getElementById('toggleAdvanced');
+        const advancedOptions = document.getElementById('advancedOptions');
+        const advancedArrow = document.getElementById('advancedArrow');
+
+        toggleAdvanced?.addEventListener('click', () => {
+            const isVisible = advancedOptions.style.display !== 'none';
+            advancedOptions.style.display = isVisible ? 'none' : 'block';
+            advancedArrow.textContent = isVisible ? '▼' : '▲';
+        });
+
         // Enter key to search
         queryInput?.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') searchBtn?.click();
@@ -118,6 +276,47 @@ ComponentRegistry.register('serp-search', {
             lastResponse = null;
         });
 
+        // Helper to collect all params
+        const collectParams = () => {
+            const params = {
+                q: queryInput.value.trim(),
+                search_type: currentSearchType,
+                location: document.getElementById('serpLocation')?.value || 'United States',
+                device: document.getElementById('serpDevice')?.value || 'desktop',
+                num: document.getElementById('serpNum')?.value || '10'
+            };
+
+            // Advanced params (only include if set)
+            const engine = document.getElementById('serpEngine')?.value;
+            const googleDomain = document.getElementById('serpGoogleDomain')?.value;
+            const hl = document.getElementById('serpHl')?.value;
+            const gl = document.getElementById('serpGl')?.value;
+            const timePeriod = document.getElementById('serpTimePeriod')?.value;
+            const safe = document.getElementById('serpSafe')?.value;
+            const page = document.getElementById('serpPage')?.value;
+            const includeHtml = document.getElementById('serpIncludeHtml')?.value;
+
+            if (engine && engine !== 'google') params.engine = engine;
+            if (googleDomain) params.google_domain = googleDomain;
+            if (hl) params.hl = hl;
+            if (gl) params.gl = gl;
+            if (timePeriod) params.time_period = timePeriod;
+            if (safe) params.safe = safe;
+            if (page && page !== '1') params.page = page;
+            if (includeHtml === 'true') params.include_html = 'true';
+
+            return params;
+        };
+
+        // Build URL from params
+        const buildUrl = (params) => {
+            const queryString = Object.entries(params)
+                .filter(([_, v]) => v)
+                .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+                .join('&');
+            return `/api/serpwow/search?${queryString}`;
+        };
+
         // Search button click
         searchBtn?.addEventListener('click', async () => {
             const query = queryInput.value.trim();
@@ -126,15 +325,14 @@ ComponentRegistry.register('serp-search', {
                 return;
             }
 
-            const location = document.getElementById('serpLocation').value;
-            const device = document.getElementById('serpDevice').value;
-            const num = document.getElementById('serpNum').value;
+            const params = collectParams();
+            const fullUrl = buildUrl(params);
 
             // Build request object
             lastRequest = {
                 endpoint: '/api/serpwow/search',
-                params: { q: query, location, device, num },
-                fullUrl: `/api/serpwow/search?q=${encodeURIComponent(query)}&location=${encodeURIComponent(location)}&device=${device}&num=${num}`,
+                params: params,
+                fullUrl: fullUrl,
                 timestamp: new Date().toISOString()
             };
 

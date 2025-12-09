@@ -205,6 +205,192 @@ app.get('/api/rainforest/offers', async (req, res) => {
 });
 
 // ============================================
+// Database Services
+// ============================================
+const { UserService, SearchHistoryService, AsinService, ChatService, BatchService } = require('./db');
+
+// --- Users API ---
+app.get('/api/users', (req, res) => {
+    try {
+        const users = UserService.list();
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/users', (req, res) => {
+    try {
+        const { email, name, role } = req.body;
+        if (!email) return res.status(400).json({ error: 'Email required' });
+        const user = UserService.create(email, name, role);
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/users/:id', (req, res) => {
+    try {
+        const user = UserService.getById(req.params.id);
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/users/:id', (req, res) => {
+    try {
+        const user = UserService.update(req.params.id, req.body);
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/users/:id', (req, res) => {
+    try {
+        UserService.delete(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- Search History API ---
+app.get('/api/search-history', (req, res) => {
+    try {
+        const history = SearchHistoryService.getRecent(parseInt(req.query.limit) || 50);
+        res.json(history);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/search-history', (req, res) => {
+    try {
+        const { userId, searchType, query, params, responseSummary } = req.body;
+        SearchHistoryService.add(userId, searchType, query, params, responseSummary);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- Tracked ASINs API ---
+app.get('/api/tracked-asins', (req, res) => {
+    try {
+        const userId = req.query.userId;
+        const asins = userId ? AsinService.getByUser(userId) : [];
+        res.json(asins);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/tracked-asins', (req, res) => {
+    try {
+        const { userId, asin, marketplace, title, notes, targetPrice } = req.body;
+        if (!asin) return res.status(400).json({ error: 'ASIN required' });
+        AsinService.track(userId, asin, marketplace, title, notes, targetPrice);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.put('/api/tracked-asins/:id', (req, res) => {
+    try {
+        AsinService.update(req.params.id, req.body);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.delete('/api/tracked-asins/:id', (req, res) => {
+    try {
+        AsinService.delete(req.params.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- Price History API ---
+app.get('/api/price-history/:asin', (req, res) => {
+    try {
+        const days = parseInt(req.query.days) || 30;
+        const history = AsinService.getPriceHistory(req.params.asin, days);
+        res.json(history);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/price-history', (req, res) => {
+    try {
+        const { asin, marketplace, price, buyboxSeller, buyboxPrice, isBuyboxWinner } = req.body;
+        AsinService.recordPrice(asin, marketplace, price, buyboxSeller, buyboxPrice, isBuyboxWinner);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- Chat History API (AI Memory) ---
+app.get('/api/chat/:sessionId', (req, res) => {
+    try {
+        const messages = ChatService.getSession(req.params.sessionId);
+        res.json(messages);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/chat', (req, res) => {
+    try {
+        const { userId, sessionId, role, content, context } = req.body;
+        ChatService.addMessage(userId, sessionId, role, content, context);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- Batch Jobs API ---
+app.get('/api/batch', (req, res) => {
+    try {
+        const userId = req.query.userId;
+        const jobs = userId ? BatchService.getByUser(userId) : [];
+        res.json(jobs);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get('/api/batch/:id', (req, res) => {
+    try {
+        const job = BatchService.get(req.params.id);
+        if (!job) return res.status(404).json({ error: 'Job not found' });
+        res.json(job);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.post('/api/batch', (req, res) => {
+    try {
+        const { userId, jobType, inputData } = req.body;
+        const id = BatchService.create(userId, jobType, inputData);
+        res.json({ id, status: 'pending' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ============================================
 // Catch-all: Serve index.html for SPA routing
 // ============================================
 app.get('*', (req, res) => {
@@ -223,10 +409,17 @@ app.listen(PORT, () => {
     console.log('   GET /api/status');
     console.log('   GET /api/serpwow/search?q=query');
     console.log('   GET /api/rainforest/product?asin=B08XYZ');
-    console.log('   GET /api/rainforest/reviews?asin=B08XYZ');
     console.log('   GET /api/rainforest/offers?asin=B08XYZ');
+    console.log('');
+    console.log('💾 Database Endpoints:');
+    console.log('   GET/POST /api/users');
+    console.log('   GET/POST /api/search-history');
+    console.log('   GET/POST /api/tracked-asins');
+    console.log('   GET/POST /api/chat');
+    console.log('   GET/POST /api/batch');
     console.log('');
     console.log('🔑 API Keys configured:');
     console.log('   SERPWOW_API_KEY:', process.env.SERPWOW_API_KEY ? '✅ Set' : '❌ Not set');
     console.log('   RAINFOREST_API_KEY:', process.env.RAINFOREST_API_KEY ? '✅ Set' : '❌ Not set');
 });
+

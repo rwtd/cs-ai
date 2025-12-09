@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS-AI ASIN Hunter</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="popup-container">
+        <header class="popup-header">
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <div class="logo-text">
+                    <span class="logo-title">CS-AI</span>
+                    <span class="logo-subtitle">ASIN Hunter</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="popup-body">
+            <div id="asin-section" class="section">
+                <div class="asin-display" id="asin-display">
+                    <span class="asin-label">Current ASIN</span>
+                    <span class="asin-value" id="asin-value">--</span>
+                    <button class="copy-btn" id="copy-asin" title="Copy ASIN">📋</button>
+                </div>
+            </div>
+
+            <div id="no-asin" class="no-asin hidden">
+                <span class="no-asin-icon">🔍</span>
+                <p>Navigate to an Amazon product page to extract ASIN</p>
+            </div>
+
+            <div id="product-info" class="section hidden">
+                <div class="info-row">
+                    <span class="info-label">Title</span>
+                    <span class="info-value" id="product-title">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Price</span>
+                    <span class="info-value" id="product-price">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Seller</span>
+                    <span class="info-value highlight" id="product-seller">--</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Market</span>
+                    <span class="info-value" id="product-marketplace">--</span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="action-btn primary" id="open-dominator">
+                    <span>⚡</span> Dominator
+                </button>
+                <button class="action-btn" id="open-price-tracker">
+                    <span>💰</span> Track Price
+                </button>
+                <button class="action-btn" id="open-buybox">
+                    <span>🏆</span> Monitor
+                </button>
+            </div>
+
+            <div class="quick-actions">
+                <button class="quick-btn" id="open-lookup" title="Product Lookup">📦</button>
+                <button class="quick-btn" id="open-reviews" title="Reviews">⭐</button>
+                <button class="quick-btn" id="open-sellers" title="Sellers">🏪</button>
+                <button class="quick-btn" id="open-settings" title="Settings">⚙️</button>
+            </div>
+        </div>
+
+        <footer class="popup-footer">
+            <span>Team Humans in the Loop</span>
+            <span class="version">v1.0.0</span>
+        </footer>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
+</html>

@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="components/buybox-styles.css">
     <!-- html2canvas for screenshots -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -36,24 +37,29 @@
                 </div>
             </div>
             <nav class="nav-menu" id="navMenu"></nav>
-            <div class="sidebar-footer">
-                <div class="api-status">
-                    <div class="status-item"><span class="status-dot online"></span><span>SerpWow</span></div>
-                    <div class="status-item"><span class="status-dot online"></span><span>Rainforest</span></div>
-                </div>
-            </div>
         </aside>
 
         <main class="main-content">
             <header class="top-bar">
-                <div class="search-container">
-                    <span class="search-icon">🔍</span>
-                    <input type="text" class="search-input" placeholder="Search tickets, products, customers..."
-                        id="searchInput">
-                    <kbd class="search-kbd">⌘K</kbd>
+                <div class="asin-search-container" id="asinSearchContainer">
+                    <span class="asin-search-icon">📦</span>
+                    <input type="text" class="asin-search-input" placeholder="Enter ASIN (e.g., B08N5WRWNW)"
+                        id="asinSearchInput" maxlength="10">
+                    <select class="asin-marketplace-select" id="asinMarketplace">
+                        <option value="amazon.com">🇺🇸</option>
+                        <option value="amazon.co.uk">🇬🇧</option>
+                        <option value="amazon.de">🇩🇪</option>
+                        <option value="amazon.ca">🇨🇦</option>
+                    </select>
+                    <button class="asin-search-btn" id="asinSearchBtn" title="Analyze ASIN">⚡</button>
+                    <div class="asin-quick-actions" id="asinQuickActions">
+                        <button class="asin-quick-btn" data-action="dominator" title="Dominator">⚡</button>
+                        <button class="asin-quick-btn" data-action="pricing" title="Track Price">💰</button>
+                        <button class="asin-quick-btn" data-action="buybox" title="Monitor">🏆</button>
+                        <button class="asin-quick-btn" data-action="product-lookup" title="Lookup">📦</button>
+                    </div>
                 </div>
                 <div class="header-actions">
-                    <button class="action-btn" id="notifBtn">🔔<span class="notification-dot"></span></button>
                     <button class="action-btn" id="themeToggle">🌙</button>
                 </div>
             </header>
@@ -63,10 +69,20 @@
 
     <div class="toast-container" id="toastContainer"></div>
     <script src="app.js"></script>
+    <!-- Core API Modules -->
+    <script src="components/rainforest-api.js"></script>
+    <script src="components/ai-engine.js"></script>
     <!-- Utilities -->
     <script src="components/screenshot-editor.js"></script>
     <!-- Plug-and-Play Components -->
     <script src="components/serp-search.js"></script>
+    <!-- Rainforest Tools -->
+    <script src="components/pricing.js"></script>
+    <script src="components/buybox.js"></script>
+    <script src="components/buybox-dominator.js"></script>
+    <!-- Settings -->
+    <script src="components/api-config.js"></script>
+    <script src="components/admin.js"></script>
 </body>
 
 </html>
