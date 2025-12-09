@@ -25,7 +25,8 @@ const NAV_CONFIG = [
     {
         section: 'Overview',
         items: [
-            { id: 'dashboard', icon: '🏠', label: 'Home' }
+            { id: 'dashboard', icon: '🏠', label: 'Home' },
+            { id: 'wildeer-admin', icon: '🦌', label: 'Wildeer Admin', badge: { type: 'new', text: 'NEW' } }
         ]
     },
     {
@@ -49,7 +50,8 @@ const NAV_CONFIG = [
         section: '⚙️ Settings',
         items: [
             { id: 'api-config', icon: '🔑', label: 'API Keys' },
-            { id: 'admin', icon: '🛡️', label: 'Admin Panel' }
+            { id: 'admin', icon: '🛡️', label: 'Admin Panel' },
+            { id: 'project-status', icon: '📋', label: 'Project Status' }
         ]
     }
 ];
@@ -81,14 +83,73 @@ const PAGE_TEMPLATES = {
     dashboard: () => `
         <div class="page-header">
             <div class="page-title">
-                <h1>🏠 Humans in the Loop</h1>
+                <h1>🏠 Welcome to CS-AI</h1>
+                <p class="page-subtitle">Customer Support AI Command Center</p>
+            </div>
+        </div>
+        
+        <div class="stats-grid" style="margin-bottom: 24px;">
+            <div class="stat-card gradient-purple">
+                <div class="stat-icon">🔍</div>
+                <div class="stat-content">
+                    <span class="stat-label">Quick Search</span>
+                    <span class="stat-value" style="font-size: 0.9rem;">Use the ASIN bar above</span>
+                </div>
+            </div>
+            <div class="stat-card gradient-blue">
+                <div class="stat-icon">🦌</div>
+                <div class="stat-content">
+                    <span class="stat-label">Wildeer Admin</span>
+                    <span class="stat-value" style="font-size: 0.9rem;">User management</span>
+                </div>
+            </div>
+            <div class="stat-card gradient-pink">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <span class="stat-label">SERP Tools</span>
+                    <span class="stat-value" style="font-size: 0.9rem;">Search & analyze</span>
+                </div>
+            </div>
+            <div class="stat-card gradient-amber">
+                <div class="stat-icon">🌧️</div>
+                <div class="stat-content">
+                    <span class="stat-label">Rainforest</span>
+                    <span class="stat-value" style="font-size: 0.9rem;">Amazon data</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+                <h3>🚀 Getting Started</h3>
+            </div>
+            <div style="padding: 24px;">
+                <p style="color: var(--text-secondary); line-height: 1.8;">
+                    Welcome to the CS-AI Command Center! Use the sidebar to navigate between tools.
+                    <br><br>
+                    <strong>Quick tips:</strong>
+                </p>
+                <ul style="list-style: none; margin-top: 16px; display: grid; gap: 12px;">
+                    <li>📦 <strong>Enter an ASIN</strong> in the top bar to quickly look up products</li>
+                    <li>🔍 <strong>SERP Lookup</strong> - Search Google and view full results</li>
+                    <li>🦌 <strong>Wildeer Admin</strong> - Manage API users across all products</li>
+                    <li>🔑 <strong>API Keys</strong> - Configure your SerpWow and Rainforest keys</li>
+                </ul>
+            </div>
+        </div>
+    `,
+
+    projectStatus: () => `
+        <div class="page-header">
+            <div class="page-title">
+                <h1>📋 Project Status</h1>
                 <p class="page-subtitle">Traject Data Customer Support AI • Hackathon 2025</p>
             </div>
         </div>
         
         <div class="card" style="max-width: 800px; margin-bottom: 24px;">
             <div class="card-header">
-                <h3>👥 Team</h3>
+                <h3>👥 Team: Humans in the Loop</h3>
             </div>
             <div style="padding: 24px; display: flex; gap: 20px; flex-wrap: wrap;">
                 <div class="team-member">🧑‍💻 <strong>Richie Waugh</strong></div>
@@ -106,10 +167,11 @@ const PAGE_TEMPLATES = {
                 <ul style="list-style: none; display: grid; gap: 12px;">
                     <li>✅ <strong>Navigation System</strong> - Click sidebar items to switch pages</li>
                     <li>✅ <strong>Component Registry</strong> - Plug-and-play tool system</li>
-                    <li>✅ <strong>Page Routing</strong> - Each nav item loads its page</li>
-                    <li>✅ <strong>Toast Notifications</strong> - app.showToast('message')</li>
-                    <li>✅ <strong>Theme/Design System</strong> - CSS variables, glassmorphism</li>
-                    <li>✅ <strong>SERP Lookup Tool</strong> - Example component (click sidebar)</li>
+                    <li>✅ <strong>SERP Search</strong> - Full Google search with preview and screenshots</li>
+                    <li>✅ <strong>Product Lookup</strong> - Rainforest API integration</li>
+                    <li>✅ <strong>User Management</strong> - SQLite database with auth</li>
+                    <li>✅ <strong>Theme System</strong> - 6 themes including light modes</li>
+                    <li>✅ <strong>Dynamic AI Models</strong> - Fetch from Gemini/OpenRouter APIs</li>
                 </ul>
             </div>
         </div>
@@ -123,32 +185,22 @@ const PAGE_TEMPLATES = {
                 <button class="api-action serpwow" data-api="serp-search" onclick="app.navigateTo('serp-search')">
                     <div class="api-icon">🌐</div>
                     <span class="api-name">SERP Lookup</span>
-                    <span class="api-desc" style="color: var(--accent-green);">✓ Has Example</span>
+                    <span class="api-desc" style="color: var(--accent-green);">✓ Complete</span>
                 </button>
-                <button class="api-action serpwow" data-api="ai-overview" onclick="app.navigateTo('ai-overview')">
-                    <div class="api-icon">🤖</div>
-                    <span class="api-name">AI Overview</span>
-                    <span class="api-desc">Empty Slot</span>
+                <button class="api-action" data-api="wildeer" onclick="app.navigateTo('wildeer-admin')">
+                    <div class="api-icon">🦌</div>
+                    <span class="api-name">Wildeer Admin</span>
+                    <span class="api-desc" style="color: var(--accent-amber);">In Progress</span>
                 </button>
                 <button class="api-action rainforest" data-api="product-lookup" onclick="app.navigateTo('product-lookup')">
                     <div class="api-icon">📦</div>
                     <span class="api-name">Product Lookup</span>
-                    <span class="api-desc">Empty Slot</span>
-                </button>
-                <button class="api-action rainforest" data-api="reviews" onclick="app.navigateTo('reviews')">
-                    <div class="api-icon">⭐</div>
-                    <span class="api-name">Reviews</span>
-                    <span class="api-desc">Empty Slot</span>
+                    <span class="api-desc" style="color: var(--accent-green);">✓ Complete</span>
                 </button>
                 <button class="api-action rainforest" data-api="buybox" onclick="app.navigateTo('buybox')">
                     <div class="api-icon">🏆</div>
                     <span class="api-name">Buy Box</span>
-                    <span class="api-desc">Empty Slot</span>
-                </button>
-                <button class="api-action rainforest" data-api="pricing" onclick="app.navigateTo('pricing')">
-                    <div class="api-icon">💰</div>
-                    <span class="api-name">Pricing</span>
-                    <span class="api-desc">Empty Slot</span>
+                    <span class="api-desc">Needs Work</span>
                 </button>
             </div>
         </div>
@@ -160,7 +212,7 @@ const PAGE_TEMPLATES = {
             <div style="padding: 24px;">
                 <pre style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 0.85rem; color: var(--text-secondary);"><code>// Create: components/my-tool.js
 
-ComponentRegistry.register('product-lookup', {
+ComponentRegistry.register('my-tool', {
     render: () => \`
         &lt;div class="page-header"&gt;
             &lt;h1&gt;📦 My Tool&lt;/h1&gt;
@@ -238,6 +290,8 @@ class CSAIApp {
         } else if (pageId === 'dashboard') {
             contentArea.innerHTML = `<section class="page active">${PAGE_TEMPLATES.dashboard()}</section>`;
             this.renderDashboardWidgets();
+        } else if (pageId === 'project-status') {
+            contentArea.innerHTML = `<section class="page active">${PAGE_TEMPLATES.projectStatus()}</section>`;
         } else {
             const pageConfig = this.findPageConfig(pageId);
             const icon = pageConfig?.icon || '🔧';
