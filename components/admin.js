@@ -81,6 +81,10 @@ ComponentRegistry.register('admin', {
                             <option value="admin">Admin</option>
                         </select>
                     </div>
+                    <div class="form-group" id="passwordGroup">
+                        <label>Password <span style="color: var(--text-muted); font-weight: normal;">(leave blank to keep unchanged)</span></label>
+                        <input type="password" id="userPassword" placeholder="Enter password">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-ghost" id="cancelBtn">Cancel</button>
@@ -127,6 +131,7 @@ ComponentRegistry.register('admin', {
                     </div>
                     <span class="user-role ${user.role}">${user.role}</span>
                     <div class="user-actions">
+                        <button class="btn-icon-sm change-password" data-id="${user.id}" title="Change Password">🔒</button>
                         <button class="btn-icon-sm edit-user" data-id="${user.id}" title="Edit">✏️</button>
                         <button class="btn-icon-sm delete-user" data-id="${user.id}" title="Delete">🗑️</button>
                     </div>
@@ -172,6 +177,8 @@ ComponentRegistry.register('admin', {
             document.getElementById('userEmail').value = '';
             document.getElementById('userName').value = '';
             document.getElementById('userRole').value = 'user';
+            document.getElementById('userPassword').value = '';
+            document.getElementById('passwordGroup').style.display = 'block';
             modal.style.display = 'flex';
         });
 
@@ -201,6 +208,8 @@ ComponentRegistry.register('admin', {
                 return;
             }
 
+            const password = document.getElementById('userPassword').value;
+
             try {
                 if (id) {
                     // Update existing user
@@ -209,14 +218,31 @@ ComponentRegistry.register('admin', {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, name, role })
                     });
+                    // Update password if provided
+                    if (password) {
+                        await fetch(`/api/users/${id}/password`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password })
+                        });
+                    }
                     window.app.showToast('✅ User updated');
                 } else {
                     // Create new user
-                    await fetch('/api/users', {
+                    const createResponse = await fetch('/api/users', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ email, name, role })
                     });
+                    const newUser = await createResponse.json();
+                    // Set password if provided
+                    if (password && newUser.id) {
+                        await fetch(`/api/users/${newUser.id}/password`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password })
+                        });
+                    }
                     window.app.showToast('✅ User created');
                 }
 
@@ -244,9 +270,34 @@ ComponentRegistry.register('admin', {
                     document.getElementById('userEmail').value = user.email;
                     document.getElementById('userName').value = user.name || '';
                     document.getElementById('userRole').value = user.role;
+                    document.getElementById('userPassword').value = '';
+                    document.getElementById('passwordGroup').style.display = 'block';
                     modal.style.display = 'flex';
                 } catch (error) {
                     window.app.showToast(`❌ Error loading user: ${error.message}`);
+                }
+            }
+
+            // Change password button
+            const pwBtn = e.target.closest('.change-password');
+            if (pwBtn) {
+                const id = pwBtn.dataset.id;
+                const newPassword = prompt('Enter new password for this user (min 6 characters):');
+                if (newPassword) {
+                    if (newPassword.length < 6) {
+                        window.app.showToast('⚠️ Password must be at least 6 characters');
+                        return;
+                    }
+                    try {
+                        await fetch(`/api/users/${id}/password`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ password: newPassword })
+                        });
+                        window.app.showToast('✅ Password updated');
+                    } catch (error) {
+                        window.app.showToast(`❌ Error: ${error.message}`);
+                    }
                 }
             }
 
