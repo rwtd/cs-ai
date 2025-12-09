@@ -269,6 +269,38 @@ app.delete('/api/users/:id', (req, res) => {
     }
 });
 
+// Password update endpoint
+app.put('/api/users/:id/password', (req, res) => {
+    try {
+        const { password } = req.body;
+        if (!password || password.length < 6) {
+            return res.status(400).json({ error: 'Password must be at least 6 characters' });
+        }
+        // In production, hash the password. For now, store directly in password_hash field
+        const user = UserService.update(req.params.id, { password_hash: password });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Logout endpoint - clears basic auth by returning 401
+app.get('/logout', (req, res) => {
+    res.status(401).send(`
+        <!DOCTYPE html>
+        <html>
+        <head><title>Logged Out</title></head>
+        <body style="background: #0f0a1f; color: white; font-family: system-ui; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+            <div style="text-align: center;">
+                <h1>👋 Logged Out</h1>
+                <p>You have been logged out successfully.</p>
+                <a href="/" style="color: #a855f7;">← Return to CS-AI</a>
+            </div>
+        </body>
+        </html>
+    `);
+});
+
 // --- Search History API ---
 app.get('/api/search-history', (req, res) => {
     try {

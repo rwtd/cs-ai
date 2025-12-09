@@ -61,6 +61,25 @@
                 </div>
                 <div class="header-actions">
                     <button class="action-btn" id="themeToggle">🌙</button>
+                    <div class="user-profile-menu" id="userProfileMenu">
+                        <button class="user-avatar-btn" id="userAvatarBtn" title="Profile">
+                            <span class="user-avatar-icon">👤</span>
+                            <span class="user-name" id="headerUserName">User</span>
+                            <span class="dropdown-arrow">▼</span>
+                        </button>
+                        <div class="user-dropdown" id="userDropdown">
+                            <button class="dropdown-item" id="editProfileBtn">
+                                <span>✏️</span> Edit Profile
+                            </button>
+                            <button class="dropdown-item" id="changePasswordBtn">
+                                <span>🔒</span> Change Password
+                            </button>
+                            <hr class="dropdown-divider">
+                            <button class="dropdown-item logout" id="logoutBtn">
+                                <span>🚪</span> Log Out
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </header>
             <div class="content-area" id="contentArea"></div>

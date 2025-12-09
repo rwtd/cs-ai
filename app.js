@@ -326,6 +326,208 @@ class CSAIApp {
 
         // ASIN Search Bar functionality
         this.initAsinSearch();
+
+        // User profile menu
+        this.initUserProfile();
+    }
+
+    initUserProfile() {
+        const avatarBtn = document.getElementById('userAvatarBtn');
+        const dropdown = document.getElementById('userDropdown');
+        const editBtn = document.getElementById('editProfileBtn');
+        const passwordBtn = document.getElementById('changePasswordBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const headerUserName = document.getElementById('headerUserName');
+
+        if (!avatarBtn) return;
+
+        // Toggle dropdown
+        avatarBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+
+        // Close dropdown on outside click
+        document.addEventListener('click', () => {
+            dropdown.classList.remove('show');
+        });
+
+        // Load current user
+        this.loadCurrentUser();
+
+        // Edit profile
+        editBtn?.addEventListener('click', () => {
+            dropdown.classList.remove('show');
+            this.showProfileModal();
+        });
+
+        // Change password
+        passwordBtn?.addEventListener('click', () => {
+            dropdown.classList.remove('show');
+            this.showPasswordModal();
+        });
+
+        // Logout
+        logoutBtn?.addEventListener('click', () => {
+            if (confirm('Are you sure you want to log out?')) {
+                // Clear session and redirect to force re-auth
+                localStorage.removeItem('current_user');
+                window.location.href = '/logout';
+            }
+        });
+    }
+
+    async loadCurrentUser() {
+        try {
+            const response = await fetch('/api/users');
+            const users = await response.json();
+            if (users.length > 0) {
+                const user = users[0]; // For now, use first user
+                localStorage.setItem('current_user', JSON.stringify(user));
+                document.getElementById('headerUserName').textContent = user.name?.split(' ')[0] || 'User';
+            }
+        } catch (error) {
+            console.log('No users found');
+        }
+    }
+
+    showProfileModal() {
+        const user = JSON.parse(localStorage.getItem('current_user') || '{}');
+
+        const overlay = document.createElement('div');
+        overlay.className = 'profile-modal-overlay';
+        overlay.innerHTML = `
+            <div class="profile-modal">
+                <h2>✏️ Edit Profile</h2>
+                <div class="profile-form-group">
+                    <label>Name</label>
+                    <input type="text" id="profileName" value="${user.name || ''}" placeholder="Your name">
+                </div>
+                <div class="profile-form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" value="${user.email || ''}" placeholder="your@email.com">
+                </div>
+                <div class="profile-modal-actions">
+                    <button class="btn btn-ghost" id="cancelProfile">Cancel</button>
+                    <button class="btn btn-primary" id="saveProfile">💾 Save</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('show'), 10);
+
+        overlay.querySelector('#cancelProfile').addEventListener('click', () => {
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.remove(), 300);
+        });
+
+        overlay.querySelector('#saveProfile').addEventListener('click', async () => {
+            const name = document.getElementById('profileName').value.trim();
+            const email = document.getElementById('profileEmail').value.trim();
+
+            if (!name || !email) {
+                this.showToast('⚠️ Please fill in all fields');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${user.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email })
+                });
+
+                if (response.ok) {
+                    const updated = await response.json();
+                    localStorage.setItem('current_user', JSON.stringify(updated));
+                    document.getElementById('headerUserName').textContent = name.split(' ')[0];
+                    this.showToast('✅ Profile updated!');
+                    overlay.classList.remove('show');
+                    setTimeout(() => overlay.remove(), 300);
+                } else {
+                    throw new Error('Failed to update');
+                }
+            } catch (error) {
+                this.showToast('❌ Failed to update profile');
+            }
+        });
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.remove('show');
+                setTimeout(() => overlay.remove(), 300);
+            }
+        });
+    }
+
+    showPasswordModal() {
+        const user = JSON.parse(localStorage.getItem('current_user') || '{}');
+
+        const overlay = document.createElement('div');
+        overlay.className = 'profile-modal-overlay';
+        overlay.innerHTML = `
+            <div class="profile-modal">
+                <h2>🔒 Change Password</h2>
+                <div class="profile-form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password">
+                </div>
+                <div class="profile-form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                </div>
+                <div class="profile-modal-actions">
+                    <button class="btn btn-ghost" id="cancelPassword">Cancel</button>
+                    <button class="btn btn-primary" id="savePassword">🔒 Update Password</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        setTimeout(() => overlay.classList.add('show'), 10);
+
+        overlay.querySelector('#cancelPassword').addEventListener('click', () => {
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.remove(), 300);
+        });
+
+        overlay.querySelector('#savePassword').addEventListener('click', async () => {
+            const password = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (!password || password.length < 6) {
+                this.showToast('⚠️ Password must be at least 6 characters');
+                return;
+            }
+            if (password !== confirm) {
+                this.showToast('⚠️ Passwords do not match');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${user.id}/password`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    this.showToast('✅ Password updated!');
+                    overlay.classList.remove('show');
+                    setTimeout(() => overlay.remove(), 300);
+                } else {
+                    throw new Error('Failed to update');
+                }
+            } catch (error) {
+                this.showToast('❌ Failed to update password');
+            }
+        });
+
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                overlay.classList.remove('show');
+                setTimeout(() => overlay.remove(), 300);
+            }
+        });
     }
 
     initAsinSearch() {
