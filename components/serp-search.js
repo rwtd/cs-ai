@@ -563,7 +563,7 @@ ComponentRegistry.register('serp-search', {
                                     📋 Copy JSON
                                 </button>
                             </div>
-                            <pre id="jsonOutput" style="background: var(--bg-tertiary); padding: 16px; border-radius: var(--radius-md); overflow: auto; max-height: 500px; font-size: 0.8rem; color: var(--text-secondary); white-space: pre-wrap; word-wrap: break-word;"></pre>
+                            <pre id="jsonOutput" style="background: var(--bg-tertiary); padding: 16px; border-radius: var(--radius-md); overflow-x: auto; overflow-y: auto; max-height: 500px; max-width: 100%; font-size: 0.75rem; color: var(--text-secondary); white-space: pre-wrap; word-wrap: break-word; word-break: break-all; line-height: 1.4;"></pre>
                         </div>
 
                         <!-- Request Tab -->
