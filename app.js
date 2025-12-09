@@ -32,7 +32,8 @@ const NAV_CONFIG = [
         section: '🔍 SerpWow Tools',
         items: [
             { id: 'serp-search', icon: '🌐', label: 'SERP Lookup' },
-            { id: 'trends', icon: '📰', label: 'Trends & News' }
+            { id: 'trends', icon: '📰', label: 'Trends & News' },
+            { id: 'maps', icon: '📍', label: 'Maps & Local' }
         ]
     },
     {
