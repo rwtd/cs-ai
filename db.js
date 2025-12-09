@@ -168,6 +168,7 @@ const UserService = {
         if (data.name !== undefined) { updates.push('name = ?'); values.push(data.name); }
         if (data.email !== undefined) { updates.push('email = ?'); values.push(data.email); }
         if (data.role !== undefined) { updates.push('role = ?'); values.push(data.role); }
+        if (data.password_hash !== undefined) { updates.push('password_hash = ?'); values.push(data.password_hash); }
         if (data.api_keys !== undefined) { updates.push('api_keys = ?'); values.push(JSON.stringify(data.api_keys)); }
         if (data.preferences !== undefined) { updates.push('preferences = ?'); values.push(JSON.stringify(data.preferences)); }
 
@@ -177,6 +178,16 @@ const UserService = {
         const stmt = db.prepare(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`);
         stmt.run(...values);
         return this.getById(id);
+    },
+
+    getAll() {
+        // Return all users including password_hash for auth checking
+        const stmt = db.prepare('SELECT * FROM users ORDER BY created_at DESC');
+        return stmt.all().map(user => {
+            user.api_keys = JSON.parse(user.api_keys || '{}');
+            user.preferences = JSON.parse(user.preferences || '{}');
+            return user;
+        });
     },
 
     delete(id) {
