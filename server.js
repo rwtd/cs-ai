@@ -91,6 +91,15 @@ app.get('/api/status', (req, res) => {
 // Wildeer Admin API Proxy
 // ============================================
 let wildeerToken = null; // Store token in memory
+let puppeteer = null;
+
+// Lazy load puppeteer (only when needed)
+async function getPuppeteer() {
+    if (!puppeteer) {
+        puppeteer = require('puppeteer');
+    }
+    return puppeteer;
+}
 
 app.post('/api/wildeer/login', async (req, res) => {
     const { email, password } = req.body;
@@ -99,18 +108,90 @@ app.post('/api/wildeer/login', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Email and password required' });
     }
 
-    // For now, we'll just store credentials and return a placeholder
-    // In production, this would use Selenium or direct Cognito auth
+    let browser = null;
+
     try {
-        // Attempt direct Cognito auth (simplified)
-        // The Python client uses Selenium, but we can try AWS Cognito directly
-        res.json({
-            success: false,
-            error: 'Browser-based authentication required. Use the Python CLI: python wildeer/wildeer_admin.py',
-            hint: 'After authenticating via CLI, copy your token and set it manually.'
+        const pup = await getPuppeteer();
+        console.log('🦌 Starting Wildeer authentication...');
+
+        browser = await pup.launch({
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-dev-shm-usage',
+                '--disable-gpu'
+            ]
         });
+
+        const page = await browser.newPage();
+        await page.setViewport({ width: 1280, height: 800 });
+
+        // Navigate to login
+        console.log('📍 Navigating to Wildeer login...');
+        await page.goto('https://app.wildeerllp.com/login', {
+            waitUntil: 'networkidle2',
+            timeout: 30000
+        });
+
+        // Wait for login form
+        await page.waitForSelector('input[type="text"], input[type="email"]', { timeout: 10000 });
+
+        // Fill credentials
+        console.log('📝 Entering credentials...');
+        await page.type('input[type="text"], input[type="email"]', email, { delay: 50 });
+        await page.type('input[type="password"]', password, { delay: 50 });
+
+        // Click submit
+        await page.click('button[type="submit"]');
+
+        // Wait for navigation away from login page
+        console.log('⏳ Waiting for login completion...');
+        await page.waitForFunction(
+            () => !window.location.href.includes('/login'),
+            { timeout: 20000 }
+        );
+
+        // Give it a moment for localStorage to populate
+        await new Promise(r => setTimeout(r, 2000));
+
+        // Extract token from localStorage
+        console.log('🔑 Extracting token...');
+        const token = await page.evaluate(() => {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.includes('idToken')) {
+                    return localStorage.getItem(key);
+                }
+            }
+            return null;
+        });
+
+        await browser.close();
+        browser = null;
+
+        if (token) {
+            wildeerToken = token;
+            console.log('✅ Wildeer authentication successful!');
+            res.json({
+                success: true,
+                token: token,
+                message: 'Authenticated successfully!'
+            });
+        } else {
+            throw new Error('Token not found after login - check credentials');
+        }
+
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('❌ Wildeer auth error:', error.message);
+        if (browser) {
+            try { await browser.close(); } catch (e) { }
+        }
+        res.status(401).json({
+            success: false,
+            error: error.message,
+            hint: 'Check your email/password or try the manual token method'
+        });
     }
 });
 

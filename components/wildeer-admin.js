@@ -22,21 +22,42 @@ ComponentRegistry.register('wildeer-admin', {
                 <span class="card-badge" id="wildeerAuthStatus">Not Authenticated</span>
             </div>
             <div style="padding: 24px;" id="wildeerAuthForm">
-                <p style="color: var(--text-secondary); margin-bottom: 16px;">
-                    Wildeer uses browser-based authentication. Get your token from the CLI and paste it below.
-                </p>
-                <div style="display: grid; gap: 16px; max-width: 500px;">
-                    <div class="form-group">
-                        <label>JWT Token <span style="color: var(--text-muted);">(from Python CLI or browser dev tools)</span></label>
-                        <textarea id="wildeerToken" placeholder="eyJraWQiOi..." class="api-key-input" style="min-height: 80px; font-family: monospace; font-size: 0.8rem;"></textarea>
-                    </div>
-                    <button class="btn btn-primary" id="wildeerSetTokenBtn">🔐 Set Token</button>
-                    <div style="border-top: 1px solid var(--glass-border); padding-top: 16px; margin-top: 8px;">
-                        <p style="font-size: 0.85rem; color: var(--text-muted);">
-                            💡 <strong>How to get token:</strong><br>
-                            1. Run <code>python wildeer/wildeer_admin.py</code> locally<br>
-                            2. Or login at <a href="https://app.wildeerllp.com" target="_blank" style="color: var(--accent-purple);">app.wildeerllp.com</a>, open DevTools → Application → Local Storage → copy the idToken value
+                <div style="display: grid; gap: 24px; max-width: 500px;">
+                    <!-- Email/Password Login -->
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+                        <h4 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span>🔓</span> Login with Credentials
+                        </h4>
+                        <div class="form-group" style="margin-bottom: 12px;">
+                            <label>Email</label>
+                            <input type="email" id="wildeerEmail" placeholder="you@trajectdata.com" class="api-key-input">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label>Password</label>
+                            <input type="password" id="wildeerPassword" placeholder="Your password" class="api-key-input">
+                        </div>
+                        <button class="btn btn-primary" id="wildeerLoginBtn" style="width: 100%;">🔐 Login</button>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 12px;">
+                            Uses automated browser login (may take 10-20 seconds)
                         </p>
+                    </div>
+                    
+                    <!-- OR Divider -->
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="flex: 1; height: 1px; background: var(--glass-border);"></div>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">OR</span>
+                        <div style="flex: 1; height: 1px; background: var(--glass-border);"></div>
+                    </div>
+                    
+                    <!-- Manual Token -->
+                    <div style="background: var(--glass-bg); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+                        <h4 style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                            <span>🔑</span> Paste Token Manually
+                        </h4>
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <textarea id="wildeerToken" placeholder="eyJraWQiOi..." class="api-key-input" style="min-height: 60px; font-family: monospace; font-size: 0.75rem;"></textarea>
+                        </div>
+                        <button class="btn btn-ghost" id="wildeerSetTokenBtn" style="width: 100%;">📋 Set Token</button>
                     </div>
                 </div>
             </div>
@@ -118,7 +139,45 @@ ComponentRegistry.register('wildeer-admin', {
     bindEvents: function () {
         const component = this;
 
-        // Set Token
+        // Login with credentials (Puppeteer)
+        document.getElementById('wildeerLoginBtn')?.addEventListener('click', async () => {
+            const email = document.getElementById('wildeerEmail').value.trim();
+            const password = document.getElementById('wildeerPassword').value;
+
+            if (!email || !password) {
+                window.app.showToast('⚠️ Please enter email and password');
+                return;
+            }
+
+            const loginBtn = document.getElementById('wildeerLoginBtn');
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '⏳ Authenticating...';
+            window.app.showToast('🦌 Logging in... (automated browser, may take 10-20 sec)');
+
+            try {
+                const response = await fetch('/api/wildeer/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.token) {
+                    localStorage.setItem('wildeer_token', result.token);
+                    window.app.showToast('✅ Authenticated successfully!');
+                    component.checkStoredAuth();
+                } else {
+                    throw new Error(result.error || 'Authentication failed');
+                }
+            } catch (error) {
+                window.app.showToast(`❌ ${error.message}`);
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '🔐 Login';
+            }
+        });
+
+        // Set Token Manually
         document.getElementById('wildeerSetTokenBtn')?.addEventListener('click', async () => {
             const token = document.getElementById('wildeerToken').value.trim();
 
