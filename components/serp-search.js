@@ -383,6 +383,8 @@ ComponentRegistry.register('serp-search', {
                 const aiOverview = data.ai_overview;
                 const ads = data.ads || [];
                 const relatedSearches = data.related_searches || [];
+                const device = params.device || 'desktop';
+                const location = params.location || 'United States';
 
                 // Try to find total results from multiple possible locations
                 const totalResults = searchInfo.total_results
