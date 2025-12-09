@@ -18,16 +18,45 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ============================================
-// Basic Auth Configuration
+// Basic Auth Configuration with Database Support
 // ============================================
 const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'C5-@I-hackathon';
 
+// Hardcoded fallback users (used if not in database)
+const FALLBACK_USERS = {
+    'richie': AUTH_PASSWORD,
+    'nova': AUTH_PASSWORD,
+    'bhushan': AUTH_PASSWORD
+};
+
 const authMiddleware = basicAuth({
-    users: {
-        'richie': AUTH_PASSWORD,
-        'nova': AUTH_PASSWORD,
-        'bhushan': AUTH_PASSWORD
+    authorizer: (username, password, cb) => {
+        // First check database for user with password_hash
+        try {
+            const users = UserService.getAll();
+            const dbUser = users.find(u =>
+                u.name?.toLowerCase().split(' ')[0] === username.toLowerCase() ||
+                u.email?.toLowerCase().split('@')[0] === username.toLowerCase()
+            );
+
+            if (dbUser && dbUser.password_hash) {
+                // User has set a password in the database
+                const match = password === dbUser.password_hash;
+                return cb(null, match);
+            }
+        } catch (e) {
+            // Database not ready yet, fall through to hardcoded
+        }
+
+        // Fall back to hardcoded passwords
+        if (FALLBACK_USERS[username.toLowerCase()]) {
+            const match = basicAuth.safeCompare(password, FALLBACK_USERS[username.toLowerCase()]);
+            return cb(null, match);
+        }
+
+        return cb(null, false);
     },
+    authorizeAsync: true,
     challenge: true,
     realm: 'CS-AI Command Center - Humans in the Loop'
 });
