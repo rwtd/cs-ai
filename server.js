@@ -88,6 +88,153 @@ app.get('/api/status', (req, res) => {
 });
 
 // ============================================
+// Wildeer Admin API Proxy
+// ============================================
+let wildeerToken = null; // Store token in memory
+
+app.post('/api/wildeer/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ success: false, error: 'Email and password required' });
+    }
+
+    // For now, we'll just store credentials and return a placeholder
+    // In production, this would use Selenium or direct Cognito auth
+    try {
+        // Attempt direct Cognito auth (simplified)
+        // The Python client uses Selenium, but we can try AWS Cognito directly
+        res.json({
+            success: false,
+            error: 'Browser-based authentication required. Use the Python CLI: python wildeer/wildeer_admin.py',
+            hint: 'After authenticating via CLI, copy your token and set it manually.'
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Set token manually (workaround until Selenium integration)
+app.post('/api/wildeer/set-token', (req, res) => {
+    const { token } = req.body;
+    if (!token) {
+        return res.status(400).json({ success: false, error: 'Token required' });
+    }
+    wildeerToken = token;
+    res.json({ success: true, message: 'Token stored' });
+});
+
+// Search users
+app.get('/api/wildeer/search', async (req, res) => {
+    const token = req.headers['authorization'] || wildeerToken;
+
+    if (!token) {
+        return res.status(401).json({ success: false, error: 'Not authenticated. Set token first.' });
+    }
+
+    const { term, app: appFilter, page = 1 } = req.query;
+
+    try {
+        const params = new URLSearchParams({
+            page,
+            page_size: 25,
+            search_term: term || '',
+            app_names: appFilter || 'serpwow,rainforestapi,scaleserp,valueserp,asindataapi,bigboxapi,bluecartapi,countdownapi,redcircleapi',
+            sort_by: 'date',
+            sort_direction: 'descend',
+            type: 'all'
+        });
+
+        const response = await fetch(`https://api.wildeerllp.com/admin/users?${params}`, {
+            headers: {
+                'app_name': 'wildeerllp',
+                'authorization': token,
+                'accept': 'application/json',
+                'content-type': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get user usage
+app.get('/api/wildeer/usage/:userId', async (req, res) => {
+    const token = req.headers['authorization'] || wildeerToken;
+
+    if (!token) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
+
+    try {
+        const response = await fetch(`https://api.wildeerllp.com/admin/user/usage?user_id=${req.params.userId}`, {
+            headers: {
+                'app_name': 'wildeerllp',
+                'authorization': token,
+                'accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get plans
+app.get('/api/wildeer/plans', async (req, res) => {
+    const token = req.headers['authorization'] || wildeerToken;
+
+    if (!token) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
+
+    try {
+        const response = await fetch('https://api.wildeerllp.com/admin/plans', {
+            headers: {
+                'app_name': 'wildeerllp',
+                'authorization': token,
+                'accept': 'application/json'
+            }
+        });
+
+        const data = await response.json();
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Check ban status
+app.get('/api/wildeer/check-ban', async (req, res) => {
+    const token = req.headers['authorization'] || wildeerToken;
+    const { email } = req.query;
+
+    if (!token) {
+        return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
+
+    try {
+        const [emailBlocked, domainBanned] = await Promise.all([
+            fetch(`https://api.wildeerllp.com/isemailblocked?email=${email}`, {
+                headers: { 'app_name': 'wildeerllp', 'authorization': token }
+            }).then(r => r.json()),
+            fetch(`https://api.wildeerllp.com/isemaildomainbanned?email=${email}`, {
+                headers: { 'app_name': 'wildeerllp', 'authorization': token }
+            }).then(r => r.json())
+        ]);
+
+        res.json({ success: true, emailBlocked, domainBanned });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ============================================
 // SerpWow API Proxy
 // ============================================
 app.get('/api/serpwow/search', async (req, res) => {

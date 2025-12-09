@@ -23,18 +23,21 @@ ComponentRegistry.register('wildeer-admin', {
             </div>
             <div style="padding: 24px;" id="wildeerAuthForm">
                 <p style="color: var(--text-secondary); margin-bottom: 16px;">
-                    Enter your Wildeer LLP credentials to manage API users.
+                    Wildeer uses browser-based authentication. Get your token from the CLI and paste it below.
                 </p>
-                <div style="display: grid; gap: 16px; max-width: 400px;">
+                <div style="display: grid; gap: 16px; max-width: 500px;">
                     <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="wildeerEmail" placeholder="you@trajectdata.com" class="api-key-input">
+                        <label>JWT Token <span style="color: var(--text-muted);">(from Python CLI or browser dev tools)</span></label>
+                        <textarea id="wildeerToken" placeholder="eyJraWQiOi..." class="api-key-input" style="min-height: 80px; font-family: monospace; font-size: 0.8rem;"></textarea>
                     </div>
-                    <div class="form-group">
-                        <label>Password</label>
-                        <input type="password" id="wildeerPassword" placeholder="Your password" class="api-key-input">
+                    <button class="btn btn-primary" id="wildeerSetTokenBtn">🔐 Set Token</button>
+                    <div style="border-top: 1px solid var(--glass-border); padding-top: 16px; margin-top: 8px;">
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">
+                            💡 <strong>How to get token:</strong><br>
+                            1. Run <code>python wildeer/wildeer_admin.py</code> locally<br>
+                            2. Or login at <a href="https://app.wildeerllp.com" target="_blank" style="color: var(--accent-purple);">app.wildeerllp.com</a>, open DevTools → Application → Local Storage → copy the idToken value
+                        </p>
                     </div>
-                    <button class="btn btn-primary" id="wildeerLoginBtn">🔓 Login</button>
                 </div>
             </div>
         </div>
@@ -115,37 +118,23 @@ ComponentRegistry.register('wildeer-admin', {
     bindEvents: function () {
         const component = this;
 
-        // Login
-        document.getElementById('wildeerLoginBtn')?.addEventListener('click', async () => {
-            const email = document.getElementById('wildeerEmail').value.trim();
-            const password = document.getElementById('wildeerPassword').value;
+        // Set Token
+        document.getElementById('wildeerSetTokenBtn')?.addEventListener('click', async () => {
+            const token = document.getElementById('wildeerToken').value.trim();
 
-            if (!email || !password) {
-                window.app.showToast('⚠️ Please enter email and password');
+            if (!token) {
+                window.app.showToast('⚠️ Please paste your JWT token');
                 return;
             }
 
-            window.app.showToast('🔄 Authenticating... (this may take a moment)');
-
-            try {
-                const response = await fetch('/api/wildeer/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-
-                const result = await response.json();
-
-                if (result.success && result.token) {
-                    localStorage.setItem('wildeer_token', result.token);
-                    window.app.showToast('✅ Authenticated successfully!');
-                    component.checkStoredAuth();
-                } else {
-                    throw new Error(result.error || 'Authentication failed');
-                }
-            } catch (error) {
-                window.app.showToast(`❌ ${error.message}`);
+            if (!token.startsWith('eyJ')) {
+                window.app.showToast('⚠️ Invalid token format - should start with eyJ...');
+                return;
             }
+
+            localStorage.setItem('wildeer_token', token);
+            window.app.showToast('✅ Token saved! You can now search users.');
+            component.checkStoredAuth();
         });
 
         // Search
