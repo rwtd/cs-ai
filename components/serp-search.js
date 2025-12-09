@@ -350,7 +350,14 @@ ComponentRegistry.register('serp-search', {
             requestStartTime = performance.now();
 
             try {
-                const response = await fetch(lastRequest.fullUrl);
+                // Get API key from localStorage
+                const serpwowKey = localStorage.getItem('serpwow_api_key');
+                const headers = {};
+                if (serpwowKey) {
+                    headers['X-Serpwow-Key'] = serpwowKey;
+                }
+
+                const response = await fetch(lastRequest.fullUrl, { headers });
                 const data = await response.json();
                 const responseTime = ((performance.now() - requestStartTime) / 1000).toFixed(2);
 

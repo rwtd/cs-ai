@@ -62,16 +62,17 @@ app.get('/api/status', (req, res) => {
 // SerpWow API Proxy
 // ============================================
 app.get('/api/serpwow/search', async (req, res) => {
-    const apiKey = process.env.SERPWOW_API_KEY;
+    // Try env var first, then client-provided header
+    const apiKey = process.env.SERPWOW_API_KEY || req.headers['x-serpwow-key'];
 
     if (!apiKey) {
         return res.status(503).json({
             error: 'SerpWow API key not configured',
-            hint: 'Set SERPWOW_API_KEY environment variable in Railway'
+            hint: 'Set your API key in Settings → API Keys, or set SERPWOW_API_KEY environment variable'
         });
     }
 
-    const { q, location, device, num } = req.query;
+    const { q, location, device, num, search_type, engine, google_domain, hl, gl, time_period, safe, page, include_html } = req.query;
 
     if (!q) {
         return res.status(400).json({ error: 'Missing query parameter: q' });
@@ -81,11 +82,21 @@ app.get('/api/serpwow/search', async (req, res) => {
         const params = new URLSearchParams({
             api_key: apiKey,
             q: q,
-            engine: 'google',
+            engine: engine || 'google',
             location: location || 'United States',
             device: device || 'desktop',
             num: num || '10'
         });
+
+        // Add optional params
+        if (search_type && search_type !== 'search') params.append('search_type', search_type);
+        if (google_domain) params.append('google_domain', google_domain);
+        if (hl) params.append('hl', hl);
+        if (gl) params.append('gl', gl);
+        if (time_period) params.append('time_period', time_period);
+        if (safe) params.append('safe', safe);
+        if (page && page !== '1') params.append('page', page);
+        if (include_html === 'true') params.append('include_html', 'true');
 
         const response = await fetch(`https://api.serpwow.com/search?${params}`);
         const data = await response.json();
